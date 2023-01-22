@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	_ "github.com/lib/pq"
 )
 
 // Store provides all functions to execute SQL queries
@@ -13,11 +14,16 @@ type Store struct {
 }
 
 // NewStore creates a new store
-func NewStore(db *sql.DB) *Store {
+func NewStore(dsn string) (*Store, error) {
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Store{
 		Queries: New(db),
 		db:      db,
-	}
+	}, nil
 }
 
 // ExecTx executes a function within a database transaction

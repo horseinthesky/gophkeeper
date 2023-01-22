@@ -1,24 +1,33 @@
 package server
 
 import (
-	"gophkeeper/pb"
 	"log"
 	"net"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+
+	"gophkeeper/db/db"
+	"gophkeeper/pb"
 )
 
 type Server struct {
 	*pb.UnimplementedGophKeeperServer
 	config Config
+	db     *db.Store
 }
 
-func NewServer(config Config) *Server {
+func NewServer(config Config) (*Server, error) {
+	db, err := db.NewStore(config.DSN)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Server{
 		&pb.UnimplementedGophKeeperServer{},
 		config,
-	}
+		db,
+	}, nil
 }
 
 func (s *Server) Run() {

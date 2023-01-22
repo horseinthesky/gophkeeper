@@ -12,6 +12,10 @@ func main() {
 		panic(err)
 	}
 
-	server := server.NewServer(config)
+	server, err := server.NewServer(config)
+	if err != nil {
+		panic(err)
+	}
+
 	server.Run()
 }
