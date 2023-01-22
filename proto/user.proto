@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package gophkeeper;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "gophkeeper/pb";
+
+message User {
+  string name = 1;
+  string passhash = 2;
+}
+
+message Token {
+  string value = 1;
+}

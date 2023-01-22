@@ -3,9 +3,11 @@ INSERT INTO secrets (
   owner,
   kind,
   name,
-  value
+  value,
+  created,
+  modified
 ) VALUES (
-  $1, $2, $3, $4
+  $1, $2, $3, $4, $5, $6
 )
 RETURNING *;
 
@@ -14,13 +16,13 @@ SELECT * FROM secrets
 WHERE owner = $1 AND kind = $2 AND name = $3
 LIMIT $1;
 
--- name: GetSecretsByKind :many
-SELECT * FROM secrets
-WHERE owner = $1 AND kind = $2;
-
 -- name: GetSecretsByUser :many
 SELECT * FROM secrets
 WHERE owner = $1;
+
+-- name: GetSecretsByKind :many
+SELECT * FROM secrets
+WHERE owner = $1 AND kind = $2;
 
 -- name: MarkSecretDeleted :exec
 UPDATE secrets

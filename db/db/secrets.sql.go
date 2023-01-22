@@ -15,18 +15,22 @@ INSERT INTO secrets (
   owner,
   kind,
   name,
-  value
+  value,
+  created,
+  modified
 ) VALUES (
-  $1, $2, $3, $4
+  $1, $2, $3, $4, $5, $6
 )
 RETURNING id, owner, kind, name, value, created, modified, deleted
 `
 
 type CreateSecretParams struct {
-	Owner sql.NullString `json:"owner"`
-	Kind  sql.NullInt32  `json:"kind"`
-	Name  sql.NullString `json:"name"`
-	Value []byte         `json:"value"`
+	Owner    sql.NullString `json:"owner"`
+	Kind     sql.NullInt32  `json:"kind"`
+	Name     sql.NullString `json:"name"`
+	Value    []byte         `json:"value"`
+	Created  sql.NullTime   `json:"created"`
+	Modified sql.NullTime   `json:"modified"`
 }
 
 func (q *Queries) CreateSecret(ctx context.Context, arg CreateSecretParams) (Secret, error) {
@@ -35,6 +39,8 @@ func (q *Queries) CreateSecret(ctx context.Context, arg CreateSecretParams) (Sec
 		arg.Kind,
 		arg.Name,
 		arg.Value,
+		arg.Created,
+		arg.Modified,
 	)
 	var i Secret
 	err := row.Scan(
@@ -106,6 +112,43 @@ type GetSecretsByKindParams struct {
 
 func (q *Queries) GetSecretsByKind(ctx context.Context, arg GetSecretsByKindParams) ([]Secret, error) {
 	rows, err := q.db.QueryContext(ctx, getSecretsByKind, arg.Owner, arg.Kind)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Secret
+	for rows.Next() {
+		var i Secret
+		if err := rows.Scan(
+			&i.ID,
+			&i.Owner,
+			&i.Kind,
+			&i.Name,
+			&i.Value,
+			&i.Created,
+			&i.Modified,
+			&i.Deleted,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getSecretsByUser = `-- name: GetSecretsByUser :many
+SELECT id, owner, kind, name, value, created, modified, deleted FROM secrets
+WHERE owner = $1
+`
+
+func (q *Queries) GetSecretsByUser(ctx context.Context, owner sql.NullString) ([]Secret, error) {
+	rows, err := q.db.QueryContext(ctx, getSecretsByUser, owner)
 	if err != nil {
 		return nil, err
 	}

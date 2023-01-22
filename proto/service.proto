@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package gophkeeper;
+
+import "google/protobuf/empty.proto";
+
+import "user.proto";
+import "secret.proto";
+
+option go_package = "gophkeeper/pb";
+
+service GophKeeper {
+  rpc Register(User) returns (Token) {}
+  rpc Login(User) returns (Token) {}
+  rpc Authenticate(Token) returns (google.protobuf.Empty) {}
+
+  rpc SetSecret(Secret) returns (google.protobuf.Empty) {}
+  rpc GetSecret(SecretRequest) returns (Secret) {}
+  rpc GetSecretS(SecretsRequest) returns (Secrets) {}
+  rpc MarkDeleted(SecretRequest) returns (google.protobuf.Empty) {}
+}
