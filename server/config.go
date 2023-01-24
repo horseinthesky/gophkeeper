@@ -10,7 +10,7 @@ import (
 const (
 	defaultEnvironment = "dev"
 	defaultAddress     = "localhost:8080"
-	defaultDSN         = "postgresql://postgres@localhost:5432?sslmode=disable"
+	defaultDSN         = "postgresql://postgres:mysecretpassword@localhost:15432?sslmode=disable"
 	defaultClean       = 5 * time.Second
 )
 

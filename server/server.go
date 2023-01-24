@@ -47,7 +47,8 @@ func NewServer(config Config, logger zerolog.Logger) (*Server, error) {
 func (s *Server) Run() {
 	listener, err := net.Listen("tcp", s.config.Address)
 	if err != nil {
-		s.log.Fatal()
+		s.log.Error().Err(err)
+		return
 	}
 
 	go s.clean(context.Background())

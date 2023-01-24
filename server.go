@@ -17,7 +17,8 @@ func main() {
 
 	server, err := server.NewServer(config, logger)
 	if err != nil {
-		logger.Err(err)
+		logger.Error().Err(err).Msg("failed to create new server")
+		return
 	}
 
 	server.Run()
