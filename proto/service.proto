@@ -16,6 +16,6 @@ service GophKeeper {
 
   rpc SetSecret(Secret) returns (google.protobuf.Empty) {}
   rpc GetSecret(SecretRequest) returns (Secret) {}
-  rpc GetSecretS(SecretsRequest) returns (Secrets) {}
+  rpc GetSecrets(SecretsRequest) returns (Secrets) {}
   rpc MarkDeleted(SecretRequest) returns (google.protobuf.Empty) {}
 }

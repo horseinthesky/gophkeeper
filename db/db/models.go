@@ -9,18 +9,18 @@ import (
 )
 
 type Secret struct {
-	ID       int64          `json:"id"`
-	Owner    sql.NullString `json:"owner"`
-	Kind     sql.NullInt32  `json:"kind"`
-	Name     sql.NullString `json:"name"`
-	Value    []byte         `json:"value"`
-	Created  sql.NullTime   `json:"created"`
-	Modified sql.NullTime   `json:"modified"`
-	Deleted  sql.NullBool   `json:"deleted"`
+	ID       int64
+	Owner    sql.NullString
+	Kind     sql.NullInt32
+	Name     sql.NullString
+	Value    []byte
+	Created  sql.NullTime
+	Modified sql.NullTime
+	Deleted  sql.NullBool
 }
 
 type User struct {
-	ID       int32  `json:"id"`
-	Name     string `json:"name"`
-	Passhash string `json:"passhash"`
+	ID       int32
+	Name     string
+	Passhash string
 }

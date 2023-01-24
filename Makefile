@@ -1,10 +1,14 @@
+PASS=mysecretpassword
+
 SDB_CONTAINER_NAME=server-postgres
 SDB_PORT=15432
+SDSN=postgresql://postgres:$(PASS)@localhost:$(SDB_PORT)?sslmode=disable
+
 CDB_CONTAINER_NAME=client-postgres
 CDB_PORT=25432
+CDSN=postgresql://postgres:$(PASS)@localhost:$(CDB_PORT)?sslmode=disable
+
 MIGRATIONS_DIR=db/migrations
-PASS=mysecretpassword
-SDSN=postgresql://postgres:$(PASS)@localhost:$(SDB_PORT)?sslmode=disable
 
 init:
 	go mod tidy
@@ -30,10 +34,12 @@ rmdb:
 migrateup:
 	@docker start $(SDB_CONTAINER_NAME)
 	migrate -path $(MIGRATIONS_DIR) -database "$(SDSN)" -verbose up
+	migrate -path $(MIGRATIONS_DIR) -database "$(CDSN)" -verbose up
 
 migratedown:
 	@docker start $(SDB_CONTAINER_NAME)
 	migrate -path $(MIGRATIONS_DIR) -database "$(SDSN)" -verbose down
+	migrate -path $(MIGRATIONS_DIR) -database "$(CDSN)" -verbose down
 
 sqlc:
 	sqlc generate

@@ -20,8 +20,8 @@ RETURNING id, name, passhash
 `
 
 type CreateUserParams struct {
-	Name     string `json:"name"`
-	Passhash string `json:"passhash"`
+	Name     string
+	Passhash string
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
@@ -48,8 +48,8 @@ LIMIT 1
 `
 
 type GetUserParams struct {
-	Name     string `json:"name"`
-	Passhash string `json:"passhash"`
+	Name     string
+	Passhash string
 }
 
 func (q *Queries) GetUser(ctx context.Context, arg GetUserParams) (User, error) {

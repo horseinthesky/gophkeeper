@@ -47,11 +47,11 @@ func NewServer(config Config, logger zerolog.Logger) (*Server, error) {
 func (s *Server) Run() {
 	listener, err := net.Listen("tcp", s.config.Address)
 	if err != nil {
-		s.log.Error().Err(err)
+		s.log.Error().Err(err).Msg("failed to open socket")
 		return
 	}
 
-	go s.clean(context.Background())
+	go s.cleanJob(context.Background())
 
 	grpcServer := grpc.NewServer()
 	pb.RegisterGophKeeperServer(grpcServer, s)
@@ -67,20 +67,21 @@ func (s *Server) Run() {
 	grpcServer.GracefulStop()
 }
 
-func (s *Server) clean(ctx context.Context) {
+func (s *Server) cleanJob(ctx context.Context) {
 	ticker := time.NewTicker(s.config.Clean)
 
 	for {
 		select {
 		case <-ctx.Done():
+			s.log.Info().Msg("finished cleaning db")
 			return
 		case <-ticker.C:
-			s.cleanStorage(ctx)
+			s.clean(ctx)
 		}
 	}
 }
 
-func (s *Server) cleanStorage(ctx context.Context) {
+func (s *Server) clean(ctx context.Context) {
 	deletedSecrets, err := s.storage.CleanSecrets(ctx)
 	if err != nil {
 		s.log.Error().Msg("failed to clean deleted secrets")

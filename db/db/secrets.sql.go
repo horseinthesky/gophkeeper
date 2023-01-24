@@ -63,12 +63,12 @@ RETURNING id, owner, kind, name, value, created, modified, deleted
 `
 
 type CreateSecretParams struct {
-	Owner    sql.NullString `json:"owner"`
-	Kind     sql.NullInt32  `json:"kind"`
-	Name     sql.NullString `json:"name"`
-	Value    []byte         `json:"value"`
-	Created  sql.NullTime   `json:"created"`
-	Modified sql.NullTime   `json:"modified"`
+	Owner    sql.NullString
+	Kind     sql.NullInt32
+	Name     sql.NullString
+	Value    []byte
+	Created  sql.NullTime
+	Modified sql.NullTime
 }
 
 func (q *Queries) CreateSecret(ctx context.Context, arg CreateSecretParams) (Secret, error) {
@@ -100,9 +100,9 @@ WHERE owner = $1 AND kind = $2 AND name = $3
 `
 
 type DeleteSecretParams struct {
-	Owner sql.NullString `json:"owner"`
-	Kind  sql.NullInt32  `json:"kind"`
-	Name  sql.NullString `json:"name"`
+	Owner sql.NullString
+	Kind  sql.NullInt32
+	Name  sql.NullString
 }
 
 func (q *Queries) DeleteSecret(ctx context.Context, arg DeleteSecretParams) error {
@@ -117,9 +117,9 @@ LIMIT $1
 `
 
 type GetSecretParams struct {
-	Limit int32          `json:"limit"`
-	Kind  sql.NullInt32  `json:"kind"`
-	Name  sql.NullString `json:"name"`
+	Limit int32
+	Kind  sql.NullInt32
+	Name  sql.NullString
 }
 
 func (q *Queries) GetSecret(ctx context.Context, arg GetSecretParams) (Secret, error) {
@@ -144,8 +144,8 @@ WHERE owner = $1 AND kind = $2
 `
 
 type GetSecretsByKindParams struct {
-	Owner sql.NullString `json:"owner"`
-	Kind  sql.NullInt32  `json:"kind"`
+	Owner sql.NullString
+	Kind  sql.NullInt32
 }
 
 func (q *Queries) GetSecretsByKind(ctx context.Context, arg GetSecretsByKindParams) ([]Secret, error) {
@@ -224,9 +224,9 @@ WHERE owner = $1 AND kind = $2 AND name = $3
 `
 
 type MarkSecretDeletedParams struct {
-	Owner sql.NullString `json:"owner"`
-	Kind  sql.NullInt32  `json:"kind"`
-	Name  sql.NullString `json:"name"`
+	Owner sql.NullString
+	Kind  sql.NullInt32
+	Name  sql.NullString
 }
 
 func (q *Queries) MarkSecretDeleted(ctx context.Context, arg MarkSecretDeletedParams) error {
