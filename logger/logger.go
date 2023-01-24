@@ -18,5 +18,5 @@ func New(env string) zerolog.Logger {
 		Level(zerolog.TraceLevel).
 		With().
 		Timestamp().
-		Logger(), nil
+		Logger()
 }

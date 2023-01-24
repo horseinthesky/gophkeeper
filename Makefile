@@ -1,6 +1,10 @@
-DSN=postgresql://postgres@localhost:5432?sslmode=disable
-DB_CONTAINER_NAME=some-postgres
+SDB_CONTAINER_NAME=server-postgres
+SDB_PORT=15432
+CDB_CONTAINER_NAME=client-postgres
+CDB_PORT=25432
 MIGRATIONS_DIR=db/migrations
+PASS=mysecretpassword
+SDSN=postgresql://postgres:$(PASS)@localhost:$(SDB_PORT)?sslmode=disable
 
 init:
 	go mod tidy
@@ -10,21 +14,26 @@ dev:
 	go install github.com/kyleconroy/sqlc/cmd/sqlc@latest
 
 mkdb:
-	docker run --name "$(DB_CONTAINER_NAME)" --network host -e POSTGRES_PASSWORD=mysecretpassword -d postgres
+	docker run --name $(SDB_CONTAINER_NAME) -p $(SDB_PORT):5432 -e POSTGRES_PASSWORD=$(PASS) -d postgres
+	docker run --name $(CDB_CONTAINER_NAME) -p $(CDB_PORT):5432 -e POSTGRES_PASSWORD=$(PASS) -d postgres
 
-execdb:
-	docker exec -it "$(DB_CONTAINER_NAME)" psql -U postgres
+es:
+	docker exec -it $(SDB_CONTAINER_NAME) psql -U postgres
+
+ec:
+	docker exec -it $(CDB_CONTAINER_NAME) psql -U postgres
 
 rmdb:
-	docker rm "$(DB_CONTAINER_NAME)" -f
+	docker rm $(SDB_CONTAINER_NAME) -f
+	docker rm $(CDB_CONTAINER_NAME) -f
 
 migrateup:
-	@docker start "$(DB_CONTAINER_NAME)"
-	migrate -path "$(MIGRATIONS_DIR)" -database "$(DSN)" -verbose up
+	@docker start $(SDB_CONTAINER_NAME)
+	migrate -path $(MIGRATIONS_DIR) -database "$(SDSN)" -verbose up
 
 migratedown:
-	@docker start "$(DB_CONTAINER_NAME)"
-	migrate -path "$(MIGRATIONS_DIR)" -database "$(DSN)" -verbose down
+	@docker start $(SDB_CONTAINER_NAME)
+	migrate -path $(MIGRATIONS_DIR) -database "$(SDSN)" -verbose down
 
 sqlc:
 	sqlc generate
@@ -39,4 +48,4 @@ proto:
 		--go-grpc_opt=paths=source_relative \
 	proto/*.proto
 
-.PHONY: init dev mkdb execdb rmdb migrateup migratedown sqlc proto
+.PHONY: init dev mkdb es ec rmdb migrateup migratedown sqlc proto
