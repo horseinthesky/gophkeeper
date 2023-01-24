@@ -32,3 +32,8 @@ WHERE owner = $1 AND kind = $2 AND name = $3;
 -- name: DeleteSecret :exec
 DELETE FROM secrets
 WHERE owner = $1 AND kind = $2 AND name = $3;
+
+-- name: CleanSecrets :many
+DELETE FROM secrets
+WHERE deleted = true
+RETURNING *;;

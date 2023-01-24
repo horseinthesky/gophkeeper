@@ -1,6 +1,7 @@
 package main
 
 import (
+	"gophkeeper/logger"
 	"gophkeeper/server"
 )
 
@@ -12,9 +13,11 @@ func main() {
 		panic(err)
 	}
 
-	server, err := server.NewServer(config)
+	logger := logger.New(config.Environment)
+
+	server, err := server.NewServer(config, logger)
 	if err != nil {
-		panic(err)
+		logger.Err(err)
 	}
 
 	server.Run()

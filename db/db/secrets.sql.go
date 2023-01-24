@@ -10,6 +10,44 @@ import (
 	"database/sql"
 )
 
+const cleanSecrets = `-- name: CleanSecrets :many
+DELETE FROM secrets
+WHERE deleted = true
+RETURNING id, owner, kind, name, value, created, modified, deleted
+`
+
+func (q *Queries) CleanSecrets(ctx context.Context) ([]Secret, error) {
+	rows, err := q.db.QueryContext(ctx, cleanSecrets)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Secret
+	for rows.Next() {
+		var i Secret
+		if err := rows.Scan(
+			&i.ID,
+			&i.Owner,
+			&i.Kind,
+			&i.Name,
+			&i.Value,
+			&i.Created,
+			&i.Modified,
+			&i.Deleted,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const createSecret = `-- name: CreateSecret :one
 INSERT INTO secrets (
   owner,

@@ -1,19 +1,33 @@
 package server
 
-import "github.com/spf13/viper"
+import (
+	"fmt"
+	"time"
+
+	"github.com/spf13/viper"
+)
 
 const (
-	defaultAddress = "localhost:8080"
-	defaultDSN     = "postgresql://postgres@localhost:5432?sslmode=disable"
+	defaultEnvironment = "prod"
+	defaultAddress     = "localhost:8080"
+	defaultDSN         = "postgresql://postgres@localhost:5432?sslmode=disable"
+	defaultClean       = 5 * time.Second
 )
 
 // Config is a gophkeeper configuration.
 type Config struct {
-	Address string `mapstructure:"ADDRESS"`
-	DSN     string `mapstructure:"DSN"`
+	Environment string        `mapstructure:"ENV"`
+	Address     string        `mapstructure:"ADDRESS"`
+	DSN         string        `mapstructure:"DSN"`
+	Clean       time.Duration `mapstructure:"CLEAN"`
 }
 
 func LoadConfig(path string) (Config, error) {
+	viper.SetDefault("ENV", defaultEnvironment)
+	viper.SetDefault("ADDRESS", defaultAddress)
+	viper.SetDefault("DSN", defaultDSN)
+	viper.SetDefault("CLEAN", defaultClean)
+
 	viper.SetConfigFile(path)
 	viper.AutomaticEnv()
 
@@ -22,15 +36,11 @@ func LoadConfig(path string) (Config, error) {
 		return Config{}, err
 	}
 
-	var config Config
+	config := Config{}
 	err = viper.Unmarshal(&config)
 
-	if config.Address == "" {
-		config.Address = defaultAddress
-	}
-
-	if config.DSN == "" {
-		config.DSN = defaultDSN
+	if config.Environment != "prod" && config.Environment != "dev" {
+		return Config{}, fmt.Errorf("environment can only be dev/prod(default)")
 	}
 
 	return config, err

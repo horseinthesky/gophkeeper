@@ -1,6 +1,6 @@
 Table users {
   id int [pk]
-  name varchar [not null, unique]
+  name varchar [not null, unique]
   passhash varchar [not null]
 }
 
