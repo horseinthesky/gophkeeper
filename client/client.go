@@ -104,7 +104,7 @@ func (c *Client) sync(ctx context.Context) {
 	c.log.Info().Msgf("sync got %v secrets", len(pbSecrets.Secrets))
 
 	for _, pbSecret := range pbSecrets.Secrets {
-		secret := converter.PBtoSecret(pbSecret)
+		secret := converter.PBSecretToDBSecret(pbSecret)
 		if pbSecret.Deleted {
 			err := c.storage.DeleteSecret(
 				ctx,

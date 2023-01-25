@@ -8,7 +8,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func SecretToPB(secret db.Secret) *pb.Secret {
+func DBSecretToPBSecret(secret db.Secret) *pb.Secret {
 	return &pb.Secret{
 		Owner:    secret.Owner.String,
 		Kind:     secret.Kind.Int32,
@@ -20,31 +20,31 @@ func SecretToPB(secret db.Secret) *pb.Secret {
 	}
 }
 
-func PBtoSecret(pbSecret *pb.Secret) db.Secret {
+func PBSecretToDBSecret(secret *pb.Secret) db.Secret {
 	return db.Secret{
 		Owner: sql.NullString{
-			String: pbSecret.Owner,
+			String: secret.Owner,
 			Valid: true,
 		},
 		Kind: sql.NullInt32{
-			Int32: pbSecret.Kind,
+			Int32: secret.Kind,
 			Valid: true,
 		},
 		Name: sql.NullString{
-			String: pbSecret.Name,
+			String: secret.Name,
 			Valid: true,
 		},
-		Value: pbSecret.Value,
+		Value: secret.Value,
 		Created: sql.NullTime{
-			Time: pbSecret.Created.AsTime(),
+			Time: secret.Created.AsTime(),
 			Valid: true,
 		},
 		Modified: sql.NullTime{
-			Time: pbSecret.Modified.AsTime(),
+			Time: secret.Modified.AsTime(),
 			Valid: true,
 		},
 		Deleted: sql.NullBool{
-			Bool: pbSecret.Deleted,
+			Bool: secret.Deleted,
 			Valid: true,
 		},
 	}

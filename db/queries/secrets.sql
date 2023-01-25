@@ -14,7 +14,7 @@ RETURNING *;
 -- name: GetSecret :one
 SELECT * FROM secrets
 WHERE owner = $1 AND kind = $2 AND name = $3
-LIMIT $1;
+LIMIT 1;
 
 -- name: GetSecretsByUser :many
 SELECT * FROM secrets

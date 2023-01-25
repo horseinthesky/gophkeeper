@@ -113,17 +113,17 @@ func (q *Queries) DeleteSecret(ctx context.Context, arg DeleteSecretParams) erro
 const getSecret = `-- name: GetSecret :one
 SELECT id, owner, kind, name, value, created, modified, deleted FROM secrets
 WHERE owner = $1 AND kind = $2 AND name = $3
-LIMIT $1
+LIMIT 1
 `
 
 type GetSecretParams struct {
-	Limit int32
+	Owner sql.NullString
 	Kind  sql.NullInt32
 	Name  sql.NullString
 }
 
 func (q *Queries) GetSecret(ctx context.Context, arg GetSecretParams) (Secret, error) {
-	row := q.db.QueryRowContext(ctx, getSecret, arg.Limit, arg.Kind, arg.Name)
+	row := q.db.QueryRowContext(ctx, getSecret, arg.Owner, arg.Kind, arg.Name)
 	var i Secret
 	err := row.Scan(
 		&i.ID,
