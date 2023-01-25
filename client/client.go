@@ -9,7 +9,6 @@ import (
 	"gophkeeper/pb"
 	"os"
 	"os/signal"
-	"reflect"
 	"sync"
 	"syscall"
 	"time"
@@ -118,38 +117,37 @@ func (c *Client) sync(ctx context.Context) {
 				Name:  remoteSecret.Name,
 			},
 		)
-		if err != nil {
-			if errors.Is(err, sql.ErrNoRows) && !remoteSecret.Deleted.Bool {
-				_, err := c.storage.CreateSecret(
-					ctx,
-					db.CreateSecretParams{
-						Owner:    remoteSecret.Owner,
-						Kind:     remoteSecret.Kind,
-						Name:     remoteSecret.Name,
-						Value:    remoteSecret.Value,
-						Created:  remoteSecret.Created,
-						Modified: remoteSecret.Modified,
-					},
-				)
-				if err != nil {
-					c.log.Error().Err(err).Msgf(
-						"failed to sync new user %s secret %s",
-						remoteSecret.Owner.String,
-						remoteSecret.Name.String,
-					)
-					continue
-				}
-
-				c.log.Info().Msgf(
-					"successfully synced new user %s secret %s",
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			c.log.Error().Err(err).Msgf(
+				"failed to get user %s secret %s from local db",
+				remoteSecret.Owner.String,
+				remoteSecret.Name.String,
+			)
+			return
+		}
+		if errors.Is(err, sql.ErrNoRows) && !remoteSecret.Deleted.Bool {
+			_, err := c.storage.CreateSecret(
+				ctx,
+				db.CreateSecretParams{
+					Owner:    remoteSecret.Owner,
+					Kind:     remoteSecret.Kind,
+					Name:     remoteSecret.Name,
+					Value:    remoteSecret.Value,
+					Created:  remoteSecret.Created,
+					Modified: remoteSecret.Modified,
+				},
+			)
+			if err != nil {
+				c.log.Error().Err(err).Msgf(
+					"failed to sync new user %s secret %s",
 					remoteSecret.Owner.String,
 					remoteSecret.Name.String,
 				)
-				continue
+				return
 			}
 
-			c.log.Error().Err(err).Msgf(
-				"failed to get user %s secret %s from local db",
+			c.log.Info().Msgf(
+				"successfully synced new user %s secret %s",
 				remoteSecret.Owner.String,
 				remoteSecret.Name.String,
 			)
@@ -171,7 +169,7 @@ func (c *Client) sync(ctx context.Context) {
 					remoteSecret.Owner.String,
 					remoteSecret.Name.String,
 				)
-				continue
+				return
 			}
 
 			c.log.Info().Msgf(

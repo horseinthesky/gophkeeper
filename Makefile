@@ -20,6 +20,7 @@ dev:
 mkdb:
 	docker run --name $(SDB_CONTAINER_NAME) -p $(SDB_PORT):5432 -e POSTGRES_PASSWORD=$(PASS) -d postgres
 	docker run --name $(CDB_CONTAINER_NAME) -p $(CDB_PORT):5432 -e POSTGRES_PASSWORD=$(PASS) -d postgres
+	@sleep 2
 
 es:
 	docker exec -it $(SDB_CONTAINER_NAME) psql -U postgres
@@ -30,6 +31,8 @@ ec:
 rmdb:
 	docker rm $(SDB_CONTAINER_NAME) -f
 	docker rm $(CDB_CONTAINER_NAME) -f
+
+refreshdb: rmdb mkdb migrateup
 
 migrateup:
 	@docker start $(SDB_CONTAINER_NAME)
@@ -54,4 +57,4 @@ proto:
 		--go-grpc_opt=paths=source_relative \
 	proto/*.proto
 
-.PHONY: init dev mkdb es ec rmdb migrateup migratedown sqlc proto
+.PHONY: init dev mkdb es ec rmdb refreshdb migrateup migratedown sqlc proto
