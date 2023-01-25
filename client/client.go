@@ -9,6 +9,7 @@ import (
 	"gophkeeper/pb"
 	"os"
 	"os/signal"
+	"reflect"
 	"sync"
 	"syscall"
 	"time"
@@ -95,17 +96,18 @@ func (c *Client) syncJob(ctx context.Context) {
 }
 
 func (c *Client) sync(ctx context.Context) {
-	pbSecrets, err := c.g.GetSecrets(ctx, &pb.SecretsRequest{
+	remotePBSecrets, err := c.g.GetSecrets(ctx, &pb.SecretsRequest{
 		Owner: c.config.User,
 	})
 	if err != nil {
-		c.log.Error().Err(err).Msg("sync failed")
+		c.log.Error().Err(err).Msgf("failed to pull user %s remote secrets", c.config.User)
 		return
 	}
 
-	c.log.Info().Msgf("sync got %v secrets", len(pbSecrets.Secrets))
+	c.log.Info().Msgf("sync got %v secrets", len(remotePBSecrets.Secrets))
 
-	for _, pbSecret := range pbSecrets.Secrets {
+	for _, pbSecret := range remotePBSecrets.Secrets {
+		// Pull remote
 		remoteSecret := converter.PBSecretToDBSecret(pbSecret)
 
 		localSecret, err := c.storage.GetSecret(
@@ -130,15 +132,27 @@ func (c *Client) sync(ctx context.Context) {
 					},
 				)
 				if err != nil {
-					c.log.Error().Err(err).Msgf("failed to sync new user %s secret %s", remoteSecret.Owner.String, remoteSecret.Name.String)
+					c.log.Error().Err(err).Msgf(
+						"failed to sync new user %s secret %s",
+						remoteSecret.Owner.String,
+						remoteSecret.Name.String,
+					)
 					continue
 				}
 
-				c.log.Info().Msgf("successfully synced new user %s secret %s", remoteSecret.Owner.String, remoteSecret.Name.String)
+				c.log.Info().Msgf(
+					"successfully synced new user %s secret %s",
+					remoteSecret.Owner.String,
+					remoteSecret.Name.String,
+				)
 				continue
 			}
 
-			c.log.Error().Err(err).Msgf("failed to get user %s secret %s from local db", remoteSecret.Owner.String, remoteSecret.Name.String)
+			c.log.Error().Err(err).Msgf(
+				"failed to get user %s secret %s from local db",
+				remoteSecret.Owner.String,
+				remoteSecret.Name.String,
+			)
 			continue
 		}
 
@@ -152,11 +166,19 @@ func (c *Client) sync(ctx context.Context) {
 				},
 			)
 			if err != nil {
-				c.log.Error().Err(err).Msgf("failed to delete user %s secret %s", remoteSecret.Owner.String, remoteSecret.Name.String)
+				c.log.Error().Err(err).Msgf(
+					"failed to delete user %s secret %s",
+					remoteSecret.Owner.String,
+					remoteSecret.Name.String,
+				)
 				continue
 			}
 
-			c.log.Info().Msgf("successfully synced deletion of user %s secret %s", remoteSecret.Owner.String, remoteSecret.Name.String)
+			c.log.Info().Msgf(
+				"successfully synced deletion of user %s secret %s",
+				remoteSecret.Owner.String,
+				remoteSecret.Name.String,
+			)
 			continue
 		}
 
@@ -173,12 +195,51 @@ func (c *Client) sync(ctx context.Context) {
 				},
 			)
 			if err != nil {
-				c.log.Error().Err(err).Msgf("failed to update user %s secret %s", remoteSecret.Owner.String, remoteSecret.Name.String)
+				c.log.Error().Err(err).Msgf(
+					"failed to update user %s secret %s",
+					remoteSecret.Owner.String,
+					remoteSecret.Name.String,
+				)
+				continue
 			}
 
-			c.log.Info().Msgf("successfully synced update of user %s secret %s", remoteSecret.Owner.String, remoteSecret.Name.String)
+			c.log.Info().Msgf(
+				"successfully synced update of user %s secret %s",
+				remoteSecret.Owner.String,
+				remoteSecret.Name.String,
+			)
 		}
 	}
+
+	// Push local
+	// localSecrets, err := c.storage.GetSecretsByUser(
+	// 	ctx,
+	// 	sql.NullString{
+	// 		String: c.config.User,
+	// 		Valid:  true,
+	// 	},
+	// )
+	// if err != nil {
+	// 	c.log.Error().Err(err).Msgf(
+	// 		"failed to get user %s local secrets",
+	// 		c.config.User,
+	// 	)
+	// 	return
+	// }
+	//
+	// localPBSecrets := []*pb.Secret{}
+	// for _, secret := range localSecrets {
+	// 	localPBSecrets = append(localPBSecrets, converter.DBSecretToPBSecret(secret))
+	// }
+	//
+	// _, err = c.g.SetSecrets(ctx, &pb.Secrets{Secrets: localPBSecrets})
+	// if err != nil {
+	// 	c.log.Error().Err(err).Msgf(
+	// 		"failed to push user %s local secrets",
+	// 		c.config.User,
+	// 	)
+	// 	return
+	// }
 
 	c.log.Info().Msg("sync successfull")
 }

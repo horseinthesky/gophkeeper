@@ -28,6 +28,7 @@ type GophKeeperClient interface {
 	Authenticate(ctx context.Context, in *Token, opts ...grpc.CallOption) (*empty.Empty, error)
 	SetSecret(ctx context.Context, in *Secret, opts ...grpc.CallOption) (*empty.Empty, error)
 	GetSecret(ctx context.Context, in *SecretRequest, opts ...grpc.CallOption) (*Secret, error)
+	SetSecrets(ctx context.Context, in *Secrets, opts ...grpc.CallOption) (*empty.Empty, error)
 	GetSecrets(ctx context.Context, in *SecretsRequest, opts ...grpc.CallOption) (*Secrets, error)
 	MarkDeleted(ctx context.Context, in *SecretRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 }
@@ -85,6 +86,15 @@ func (c *gophKeeperClient) GetSecret(ctx context.Context, in *SecretRequest, opt
 	return out, nil
 }
 
+func (c *gophKeeperClient) SetSecrets(ctx context.Context, in *Secrets, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/gophkeeper.GophKeeper/SetSecrets", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *gophKeeperClient) GetSecrets(ctx context.Context, in *SecretsRequest, opts ...grpc.CallOption) (*Secrets, error) {
 	out := new(Secrets)
 	err := c.cc.Invoke(ctx, "/gophkeeper.GophKeeper/GetSecrets", in, out, opts...)
@@ -112,6 +122,7 @@ type GophKeeperServer interface {
 	Authenticate(context.Context, *Token) (*empty.Empty, error)
 	SetSecret(context.Context, *Secret) (*empty.Empty, error)
 	GetSecret(context.Context, *SecretRequest) (*Secret, error)
+	SetSecrets(context.Context, *Secrets) (*empty.Empty, error)
 	GetSecrets(context.Context, *SecretsRequest) (*Secrets, error)
 	MarkDeleted(context.Context, *SecretRequest) (*empty.Empty, error)
 	mustEmbedUnimplementedGophKeeperServer()
@@ -135,6 +146,9 @@ func (UnimplementedGophKeeperServer) SetSecret(context.Context, *Secret) (*empty
 }
 func (UnimplementedGophKeeperServer) GetSecret(context.Context, *SecretRequest) (*Secret, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetSecret not implemented")
+}
+func (UnimplementedGophKeeperServer) SetSecrets(context.Context, *Secrets) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetSecrets not implemented")
 }
 func (UnimplementedGophKeeperServer) GetSecrets(context.Context, *SecretsRequest) (*Secrets, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetSecrets not implemented")
@@ -245,6 +259,24 @@ func _GophKeeper_GetSecret_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _GophKeeper_SetSecrets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Secrets)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GophKeeperServer).SetSecrets(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/gophkeeper.GophKeeper/SetSecrets",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GophKeeperServer).SetSecrets(ctx, req.(*Secrets))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _GophKeeper_GetSecrets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SecretsRequest)
 	if err := dec(in); err != nil {
@@ -307,6 +339,10 @@ var GophKeeper_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetSecret",
 			Handler:    _GophKeeper_GetSecret_Handler,
+		},
+		{
+			MethodName: "SetSecrets",
+			Handler:    _GophKeeper_SetSecrets_Handler,
 		},
 		{
 			MethodName: "GetSecrets",
