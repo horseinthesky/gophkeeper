@@ -233,3 +233,44 @@ func (q *Queries) MarkSecretDeleted(ctx context.Context, arg MarkSecretDeletedPa
 	_, err := q.db.ExecContext(ctx, markSecretDeleted, arg.Owner, arg.Kind, arg.Name)
 	return err
 }
+
+const updateSecret = `-- name: UpdateSecret :one
+UPDATE secrets
+  set value = $4,
+  created = $5,
+  modified = $6
+WHERE owner = $1 AND kind = $2 AND name = $3
+RETURNING id, owner, kind, name, value, created, modified, deleted
+`
+
+type UpdateSecretParams struct {
+	Owner    sql.NullString
+	Kind     sql.NullInt32
+	Name     sql.NullString
+	Value    []byte
+	Created  sql.NullTime
+	Modified sql.NullTime
+}
+
+func (q *Queries) UpdateSecret(ctx context.Context, arg UpdateSecretParams) (Secret, error) {
+	row := q.db.QueryRowContext(ctx, updateSecret,
+		arg.Owner,
+		arg.Kind,
+		arg.Name,
+		arg.Value,
+		arg.Created,
+		arg.Modified,
+	)
+	var i Secret
+	err := row.Scan(
+		&i.ID,
+		&i.Owner,
+		&i.Kind,
+		&i.Name,
+		&i.Value,
+		&i.Created,
+		&i.Modified,
+		&i.Deleted,
+	)
+	return i, err
+}

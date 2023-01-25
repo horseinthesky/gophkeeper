@@ -15,7 +15,7 @@ func DBSecretToPBSecret(secret db.Secret) *pb.Secret {
 		Name:     secret.Name.String,
 		Value:    secret.Value,
 		Created:  timestamppb.New(secret.Created.Time),
-		Modified: timestamppb.New(secret.Created.Time),
+		Modified: timestamppb.New(secret.Modified.Time),
 		Deleted:  secret.Deleted.Bool,
 	}
 }
