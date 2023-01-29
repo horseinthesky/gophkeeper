@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"log"
 	"net"
-	"time"
 
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog"
@@ -65,28 +64,4 @@ func (s *Server) Run() {
 	s.log.Info().Msg("finished to serve gRPC requests")
 
 	grpcServer.GracefulStop()
-}
-
-func (s *Server) cleanJob(ctx context.Context) {
-	ticker := time.NewTicker(s.config.Clean)
-
-	for {
-		select {
-		case <-ctx.Done():
-			s.log.Info().Msg("finished cleaning db")
-			return
-		case <-ticker.C:
-			s.clean(ctx)
-		}
-	}
-}
-
-func (s *Server) clean(ctx context.Context) {
-	deletedSecrets, err := s.storage.CleanSecrets(ctx)
-	if err != nil {
-		s.log.Error().Msg("failed to clean deleted secrets")
-		return
-	}
-
-	s.log.Info().Msgf("cleaned up %v deleted secrets", len(deletedSecrets))
 }

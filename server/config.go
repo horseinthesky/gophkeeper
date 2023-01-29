@@ -23,6 +23,8 @@ type Config struct {
 }
 
 func LoadConfig(path string) (Config, error) {
+	viper.SetEnvPrefix("GOPHKEEPER")
+
 	viper.SetDefault("ENV", defaultEnvironment)
 	viper.SetDefault("ADDRESS", defaultAddress)
 	viper.SetDefault("DSN", defaultDSN)

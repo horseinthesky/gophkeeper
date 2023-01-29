@@ -12,6 +12,7 @@ const (
 	defaultAddress     = "localhost:8080"
 	defaultDSN         = "postgresql://postgres:mysecretpassword@localhost:25432?sslmode=disable"
 	defaultSync        = 5 * time.Second
+	defaultClean       = 15 * time.Second
 )
 
 // Config is a gophkeeper configuration.
@@ -22,6 +23,7 @@ type Config struct {
 	Address     string        `mapstructure:"ADDRESS"`
 	DSN         string        `mapstructure:"DSN"`
 	Sync        time.Duration `mapstructure:"SYNC"`
+	Clean       time.Duration `mapstructure:"CLEAN"`
 }
 
 func LoadConfig(path string) (Config, error) {
@@ -31,6 +33,7 @@ func LoadConfig(path string) (Config, error) {
 	viper.SetDefault("ADDRESS", defaultAddress)
 	viper.SetDefault("DSN", defaultDSN)
 	viper.SetDefault("SYNC", defaultSync)
+	viper.SetDefault("CLEAN", defaultClean)
 
 	viper.SetConfigFile(path)
 	viper.AutomaticEnv()
