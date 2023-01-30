@@ -15,7 +15,7 @@ var formatMap = map[string]io.Writer{
 
 func New(env string) zerolog.Logger {
 	return zerolog.New(formatMap[env]).
-		Level(zerolog.TraceLevel).
+		Level(zerolog.ErrorLevel).
 		With().
 		Timestamp().
 		Logger()

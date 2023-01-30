@@ -68,6 +68,12 @@ func (c *Client) Run() {
 		c.cleanJob(ctx)
 	}()
 
+	c.workGroup.Add(1)
+	go func() {
+		defer c.workGroup.Done()
+		c.Shell()
+	}()
+
 	term := make(chan os.Signal, 1)
 	signal.Notify(term, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
 

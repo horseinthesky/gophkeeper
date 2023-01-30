@@ -88,9 +88,9 @@ func (c *Client) sync(ctx context.Context) {
 		}
 
 		if remoteSecret.Deleted.Bool {
-			err := c.storage.MarkSecretDeleted(
+			err := c.storage.DeleteSecret(
 				ctx,
-				db.MarkSecretDeletedParams{
+				db.DeleteSecretParams{
 					Owner: remoteSecret.Owner,
 					Kind:  remoteSecret.Kind,
 					Name:  remoteSecret.Name,
@@ -98,7 +98,7 @@ func (c *Client) sync(ctx context.Context) {
 			)
 			if err != nil {
 				c.log.Error().Err(err).Msgf(
-					"failed to mark user '%s' secret '%s' as deleted",
+					"failed to delete user '%s' secret '%s'",
 					remoteSecret.Owner.String,
 					remoteSecret.Name.String,
 				)
@@ -106,7 +106,7 @@ func (c *Client) sync(ctx context.Context) {
 			}
 
 			c.log.Info().Msgf(
-				"successfully mark user '%s' secret '%s' for deletion",
+				"successfully deleted user '%s' secret '%s'",
 				remoteSecret.Owner.String,
 				remoteSecret.Name.String,
 			)
