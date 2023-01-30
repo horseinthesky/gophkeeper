@@ -2,48 +2,28 @@ package client
 
 import (
 	"fmt"
-	"net/http"
-	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-type model struct {
-	choices  []string         // items on the to-do list
-	cursor   int              // which to-do list item our cursor is pointing at
-	selected map[int]struct{} // which to-do items are selected
+type newSecretAddition struct {
+	choices   []string // items on the to-do list
+	cursor    int      // which to-do list item our cursor is pointing at
+	cancelled bool
 }
 
-func initialModel() model {
-	return model{
-		choices: []string{"get", "set", "list"},
-
-		// A map which indicates which choices are selected. We're using
-		// the  map like a mathematical set. The keys refer to the indexes
-		// of the `choices` slice, above.
-		selected: make(map[int]struct{}),
+func newSecret() newSecretAddition {
+	return newSecretAddition{
+		choices: []string{"creds", "card", "text"},
 	}
 }
 
-type statusMsg int
-
-const url = "https://charm.sh/"
-
-type errMsg struct{ err error }
-
-func (m model) Init() tea.Cmd {
+func (m newSecretAddition) Init() tea.Cmd {
 	// Just return `nil`, which means "no I/O right now, please."
-	return func() tea.Msg {
-		c := &http.Client{Timeout: 10 * time.Second}
-		res, err := c.Get(url)
-		if err != nil {
-			return errMsg{err}
-		}
-		return statusMsg(res.StatusCode)
-	}
+	return nil
 }
 
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m newSecretAddition) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
 	// Is it a key press?
@@ -54,6 +34,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// These keys should exit the program.
 		case "ctrl+c", "q":
+			m.cancelled = true
 			return m, tea.Quit
 
 		// The "up" and "k" keys move the cursor up
@@ -71,12 +52,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// The "enter" key and the spacebar (a literal space) toggle
 		// the selected state for the item that the cursor is pointing at.
 		case "enter", " ":
-			_, ok := m.selected[m.cursor]
-			if ok {
-				delete(m.selected, m.cursor)
-			} else {
-				m.selected[m.cursor] = struct{}{}
-			}
+			// _, ok := m.selected[m.cursor]
+			// if ok {
+			// 	delete(m.selected, m.cursor)
+			// } else {
+			// 	m.selected[m.cursor] = struct{}{}
+			// }
 		}
 	}
 
@@ -85,9 +66,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m model) View() string {
+func (m newSecretAddition) View() string {
+	if m.cancelled {
+		return ""
+	}
+
 	// The header
-	s := "What should we buy at the market?\n\n"
+	s := "What kind of secret you wanna add?\n\n"
 
 	// Iterate over our choices
 	for i, choice := range m.choices {
@@ -99,13 +84,13 @@ func (m model) View() string {
 		}
 
 		// Is this choice selected?
-		checked := " " // not selected
-		if _, ok := m.selected[i]; ok {
-			checked = "x" // selected!
-		}
+		// checked := " " // not selected
+		// if _, ok := m.selected[i]; ok {
+		// 	checked = "x" // selected!
+		// }
 
 		// Render the row
-		s += fmt.Sprintf("%s [%s] %s\n", cursor, checked, choice)
+		s += fmt.Sprintf("%s %s\n", cursor, choice)
 	}
 
 	// The footer
@@ -115,10 +100,10 @@ func (m model) View() string {
 	return s
 }
 
-func (c *Client) Shell() {
-	p := tea.NewProgram(initialModel())
-	if _, err := p.Run(); err != nil {
-		c.log.Error().Err(err).Msg("Alas, there's been a shell error")
-	}
-	c.log.Info().Msg("shell shut down")
-}
+// func (c *Client) Shell() {
+// 	p := tea.NewProgram(newSecret())
+// 	if _, err := p.Run(); err != nil {
+// 		c.log.Error().Err(err).Msg("Alas, there's been a shell error")
+// 	}
+// 	c.log.Info().Msg("shell shut down")
+// }

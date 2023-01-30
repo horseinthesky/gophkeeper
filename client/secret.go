@@ -12,21 +12,28 @@ import (
 type SecretKind int32
 
 const (
-	Creds SecretKind = iota
-	Text
-	Bytes
-	BankCard
+	SecretCreds SecretKind = iota
+	SecretText
+	SecretBytes
+	SecretBankCard
 )
 
-var secretStrings = [...]string{
-	"Creds",
-	"Text",
-	"Bytes",
-	"BankCard",
+var toString = map[SecretKind]string{
+	SecretCreds:    "Creds",
+	SecretText:     "Text",
+	SecretBytes:    "Bytes",
+	SecretBankCard: "Card",
+}
+
+var toID = map[string]SecretKind{
+	"Creds": SecretCreds,
+	"Text":  SecretText,
+	"Bytes": SecretBytes,
+	"Card":  SecretBankCard,
 }
 
 func (k SecretKind) String() string {
-	return secretStrings[k]
+	return toString[k]
 }
 
 func (c *Client) SetSecret(ctx context.Context, kind SecretKind, name string, payload []byte) (db.Secret, error) {
@@ -124,6 +131,16 @@ func (c *Client) GetSecret(ctx context.Context, kind SecretKind, name string) (d
 				String: name,
 				Valid:  true,
 			},
+		},
+	)
+}
+
+func (c *Client) ListSecrets(ctx context.Context) ([]db.Secret, error) {
+	return c.storage.GetSecretsByUser(
+		ctx,
+		sql.NullString{
+			String: c.config.User,
+			Valid:  true,
 		},
 	)
 }

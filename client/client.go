@@ -54,6 +54,8 @@ func NewClient(cfg Config, logger zerolog.Logger) (*Client, error) {
 }
 
 func (c *Client) Run() {
+	c.log.Info().Msg("started gophkeeper client")
+
 	ctx, cancel := context.WithCancel(context.Background())
 
 	c.workGroup.Add(1)
@@ -71,7 +73,7 @@ func (c *Client) Run() {
 	c.workGroup.Add(1)
 	go func() {
 		defer c.workGroup.Done()
-		c.Shell()
+		c.runShell(ctx)
 	}()
 
 	term := make(chan os.Signal, 1)
