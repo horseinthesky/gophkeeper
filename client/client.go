@@ -5,10 +5,7 @@ import (
 	"database/sql"
 	"gophkeeper/db/db"
 	"gophkeeper/pb"
-	"os"
-	"os/signal"
 	"sync"
-	"syscall"
 
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog"
@@ -70,17 +67,7 @@ func (c *Client) Run() {
 		c.cleanJob(ctx)
 	}()
 
-	c.workGroup.Add(1)
-	go func() {
-		defer c.workGroup.Done()
-		c.runShell(ctx)
-	}()
-
-	term := make(chan os.Signal, 1)
-	signal.Notify(term, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
-
-	sig := <-term
-	c.log.Info().Msgf("signal received: %v; terminating...\n", sig)
+	c.runShell(ctx)
 
 	cancel()
 

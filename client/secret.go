@@ -71,6 +71,14 @@ func (c *Client) SetSecret(ctx context.Context, kind SecretKind, name string, pa
 					Valid:  true,
 				},
 				Value: payload,
+				Created: sql.NullTime{
+					Time:  time.Now(),
+					Valid: true,
+				},
+				Modified: sql.NullTime{
+					Time:  time.Now(),
+					Valid: true,
+				},
 			},
 		)
 		if err != nil {
@@ -78,6 +86,7 @@ func (c *Client) SetSecret(ctx context.Context, kind SecretKind, name string, pa
 			return db.Secret{}, err
 		}
 
+		c.log.Info().Msgf("successfully created user '%s' new secret '%s'", c.config.User, name)
 		return newSecret, nil
 	}
 	if err != nil {
@@ -112,6 +121,8 @@ func (c *Client) SetSecret(ctx context.Context, kind SecretKind, name string, pa
 		},
 	)
 
+	c.log.Info().Msgf("successfully updated user '%s' secret '%s'", c.config.User, name)
+
 	return updateSecret, nil
 }
 
@@ -141,6 +152,26 @@ func (c *Client) ListSecrets(ctx context.Context) ([]db.Secret, error) {
 		sql.NullString{
 			String: c.config.User,
 			Valid:  true,
+		},
+	)
+}
+
+func (c *Client) DeleteSecret(ctx context.Context, kind SecretKind, name string) error {
+	return c.storage.MarkSecretDeleted(
+		ctx,
+		db.MarkSecretDeletedParams{
+			Owner: sql.NullString{
+				String: c.config.User,
+				Valid:  true,
+			},
+			Kind: sql.NullInt32{
+				Int32: int32(kind),
+				Valid: true,
+			},
+			Name: sql.NullString{
+				String: name,
+				Valid:  true,
+			},
 		},
 	)
 }
