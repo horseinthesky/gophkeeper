@@ -43,17 +43,12 @@ func (q *Queries) DeleteUser(ctx context.Context, name string) error {
 
 const getUser = `-- name: GetUser :one
 SELECT id, name, passhash FROM users
-WHERE name = $1 AND passhash = $2
+WHERE name = $1
 LIMIT 1
 `
 
-type GetUserParams struct {
-	Name     string
-	Passhash string
-}
-
-func (q *Queries) GetUser(ctx context.Context, arg GetUserParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, getUser, arg.Name, arg.Passhash)
+func (q *Queries) GetUser(ctx context.Context, name string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUser, name)
 	var i User
 	err := row.Scan(&i.ID, &i.Name, &i.Passhash)
 	return i, err

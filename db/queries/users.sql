@@ -9,7 +9,7 @@ RETURNING *;
 
 -- name: GetUser :one
 SELECT * FROM users
-WHERE name = $1 AND passhash = $2
+WHERE name = $1
 LIMIT 1;
 
 -- name: DeleteUser :exec

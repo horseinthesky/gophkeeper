@@ -23,6 +23,7 @@ func (c *Client) syncJob(ctx context.Context) {
 			return
 		case <-ticker.C:
 			c.sync(ctx)
+			c.log.Info().Msg("sync job successfull")
 		}
 	}
 }
@@ -171,6 +172,4 @@ func (c *Client) sync(ctx context.Context) {
 		)
 		return
 	}
-
-	c.log.Info().Msg("sync successfull")
 }

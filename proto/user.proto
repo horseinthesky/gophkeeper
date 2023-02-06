@@ -8,7 +8,7 @@ option go_package = "gophkeeper/pb";
 
 message User {
   string name = 1;
-  string passhash = 2;
+  string password = 2;
 }
 
 message Token {

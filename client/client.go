@@ -3,21 +3,25 @@ package client
 import (
 	"context"
 	"database/sql"
-	"gophkeeper/db/db"
-	"gophkeeper/pb"
 	"sync"
 
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+
+	"gophkeeper/db/db"
+	"gophkeeper/pb"
+	"gophkeeper/token"
 )
 
 type Client struct {
 	config    Config
 	storage   *db.Queries
+	tm        token.PasetoMaker
 	g         pb.GophKeeperClient
 	log       zerolog.Logger
+	token     string
 	workGroup sync.WaitGroup
 }
 
@@ -44,8 +48,10 @@ func NewClient(cfg Config, logger zerolog.Logger) (*Client, error) {
 	return &Client{
 		cfg,
 		queries,
+		token.NewPasetoMaker(),
 		client,
 		logger,
+		"",
 		sync.WaitGroup{},
 	}, nil
 }
@@ -54,6 +60,11 @@ func (c *Client) Run() {
 	c.log.Info().Msg("started gophkeeper client")
 
 	ctx, cancel := context.WithCancel(context.Background())
+
+	c.loadCachedToken()
+	if c.token == "" {
+		c.login(ctx)
+	}
 
 	c.workGroup.Add(1)
 	go func() {

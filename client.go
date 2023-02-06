@@ -13,7 +13,10 @@ func main() {
 		panic(err)
 	}
 
-	logger := logger.New(config.Environment)
+	logger, err := logger.NewFileLogger(config.Environment, "gophkeeper.log")
+	if err != nil {
+		panic(err)
+	}
 
 	client, err := client.NewClient(config, logger)
 	if err != nil {
