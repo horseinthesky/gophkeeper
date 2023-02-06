@@ -19,18 +19,9 @@ func (s *Server) SetSecret(ctx context.Context, in *pb.Secret) (*emptypb.Empty, 
 	_, err := s.storage.CreateSecret(
 		ctx,
 		db.CreateSecretParams{
-			Owner: sql.NullString{
-				String: in.Owner,
-				Valid:  true,
-			},
-			Kind: sql.NullInt32{
-				Int32: in.Kind,
-				Valid: true,
-			},
-			Name: sql.NullString{
-				String: in.Name,
-				Valid:  true,
-			},
+			Owner: in.Owner,
+			Kind: in.Kind,
+			Name: in.Name,
 			Value: in.Value,
 			Created: sql.NullTime{
 				Time:  in.Created.AsTime(),
@@ -58,18 +49,9 @@ func (s *Server) GetSecret(ctx context.Context, in *pb.SecretRequest) (*pb.Secre
 	secret, err := s.storage.GetSecret(
 		ctx,
 		db.GetSecretParams{
-			Owner: sql.NullString{
-				String: in.Owner,
-				Valid:  true,
-			},
-			Kind: sql.NullInt32{
-				Int32: in.Kind,
-				Valid: true,
-			},
-			Name: sql.NullString{
-				String: in.Name,
-				Valid:  true,
-			},
+			Owner: in.Owner,
+			Kind: in.Kind,
+			Name: in.Name,
 		},
 	)
 	if err != nil {
@@ -97,8 +79,8 @@ func (s *Server) SetSecrets(ctx context.Context, in *pb.Secrets) (*emptypb.Empty
 		if err != nil && !errors.Is(err, sql.ErrNoRows) {
 			s.log.Error().Err(err).Msgf(
 				"failed to get user '%s' secret '%s' from local db",
-				remoteSecret.Owner.String,
-				remoteSecret.Name.String,
+				remoteSecret.Owner,
+				remoteSecret.Name,
 			)
 			continue
 		}
@@ -117,16 +99,16 @@ func (s *Server) SetSecrets(ctx context.Context, in *pb.Secrets) (*emptypb.Empty
 			if err != nil {
 				s.log.Error().Err(err).Msgf(
 					"failed to sync new user '%s' secret '%s'",
-					remoteSecret.Owner.String,
-					remoteSecret.Name.String,
+					remoteSecret.Owner,
+					remoteSecret.Name,
 				)
 				continue
 			}
 
 			s.log.Info().Msgf(
 				"successfully synced new user '%s' secret '%s'",
-				remoteSecret.Owner.String,
-				remoteSecret.Name.String,
+				remoteSecret.Owner,
+				remoteSecret.Name,
 			)
 			continue
 		}
@@ -143,16 +125,16 @@ func (s *Server) SetSecrets(ctx context.Context, in *pb.Secrets) (*emptypb.Empty
 			if err != nil {
 				s.log.Error().Err(err).Msgf(
 					"failed to mark user '%s' secret '%s' as deleted",
-					remoteSecret.Owner.String,
-					remoteSecret.Name.String,
+					remoteSecret.Owner,
+					remoteSecret.Name,
 				)
 				continue
 			}
 
 			s.log.Info().Msgf(
 				"successfully marked user '%s' secret '%s' for deletion",
-				remoteSecret.Owner.String,
-				remoteSecret.Name.String,
+				remoteSecret.Owner,
+				remoteSecret.Name,
 			)
 			continue
 		}
@@ -172,16 +154,16 @@ func (s *Server) SetSecrets(ctx context.Context, in *pb.Secrets) (*emptypb.Empty
 			if err != nil {
 				s.log.Error().Err(err).Msgf(
 					"failed to update user '%s' secret '%s'",
-					remoteSecret.Owner.String,
-					remoteSecret.Name.String,
+					remoteSecret.Owner,
+					remoteSecret.Name,
 				)
 				continue
 			}
 
 			s.log.Info().Msgf(
 				"successfully synced update of user '%s' secret '%s'",
-				remoteSecret.Owner.String,
-				remoteSecret.Name.String,
+				remoteSecret.Owner,
+				remoteSecret.Name,
 			)
 		}
 	}
@@ -192,13 +174,7 @@ func (s *Server) SetSecrets(ctx context.Context, in *pb.Secrets) (*emptypb.Empty
 func (s *Server) GetSecrets(ctx context.Context, in *pb.SecretsRequest) (*pb.Secrets, error) {
 	s.log.Info().Msgf("user '%s' requested his secrets", in.Owner)
 
-	secrets, err := s.storage.GetSecretsByUser(
-		ctx,
-		sql.NullString{
-			String: in.Owner,
-			Valid:  true,
-		},
-	)
+	secrets, err := s.storage.GetSecretsByUser(ctx, in.Owner)
 	if err != nil {
 		s.log.Error().Err(err).Msgf("failed to get user %s secrets", in.Owner)
 		return nil, status.Error(codes.Internal, "failed to get secrets from db")

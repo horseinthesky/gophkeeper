@@ -1,15 +1,15 @@
 Table users {
-  id int [pk, increment]
+  id int [pk]
   name varchar [not null, unique]
   passhash varchar [not null]
 }
 
 Table secrets {
-  id bigint [pk, increment]
-  owner varchar [not null]
-  kind int [not null]
-  name varchar [not null]
-  value bytea [not null]
+  id bigint [pk]
+  owner varchar [ref: > users.name]
+  kind int
+  name varchar
+  value bytea
   created timestamptz [default: `now()`]
   modified timestamptz [default: `now()`]
   deleted boolean [default: false]

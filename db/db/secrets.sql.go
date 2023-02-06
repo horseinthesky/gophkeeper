@@ -63,9 +63,9 @@ RETURNING id, owner, kind, name, value, created, modified, deleted
 `
 
 type CreateSecretParams struct {
-	Owner    sql.NullString
-	Kind     sql.NullInt32
-	Name     sql.NullString
+	Owner    string
+	Kind     int32
+	Name     string
 	Value    []byte
 	Created  sql.NullTime
 	Modified sql.NullTime
@@ -100,9 +100,9 @@ WHERE owner = $1 AND kind = $2 AND name = $3
 `
 
 type DeleteSecretParams struct {
-	Owner sql.NullString
-	Kind  sql.NullInt32
-	Name  sql.NullString
+	Owner string
+	Kind  int32
+	Name  string
 }
 
 func (q *Queries) DeleteSecret(ctx context.Context, arg DeleteSecretParams) error {
@@ -117,9 +117,9 @@ LIMIT 1
 `
 
 type GetSecretParams struct {
-	Owner sql.NullString
-	Kind  sql.NullInt32
-	Name  sql.NullString
+	Owner string
+	Kind  int32
+	Name  string
 }
 
 func (q *Queries) GetSecret(ctx context.Context, arg GetSecretParams) (Secret, error) {
@@ -144,8 +144,8 @@ WHERE owner = $1 AND kind = $2
 `
 
 type GetSecretsByKindParams struct {
-	Owner sql.NullString
-	Kind  sql.NullInt32
+	Owner string
+	Kind  int32
 }
 
 func (q *Queries) GetSecretsByKind(ctx context.Context, arg GetSecretsByKindParams) ([]Secret, error) {
@@ -185,7 +185,7 @@ SELECT id, owner, kind, name, value, created, modified, deleted FROM secrets
 WHERE owner = $1
 `
 
-func (q *Queries) GetSecretsByUser(ctx context.Context, owner sql.NullString) ([]Secret, error) {
+func (q *Queries) GetSecretsByUser(ctx context.Context, owner string) ([]Secret, error) {
 	rows, err := q.db.QueryContext(ctx, getSecretsByUser, owner)
 	if err != nil {
 		return nil, err
@@ -224,9 +224,9 @@ WHERE owner = $1 AND kind = $2 AND name = $3
 `
 
 type MarkSecretDeletedParams struct {
-	Owner sql.NullString
-	Kind  sql.NullInt32
-	Name  sql.NullString
+	Owner string
+	Kind  int32
+	Name  string
 }
 
 func (q *Queries) MarkSecretDeleted(ctx context.Context, arg MarkSecretDeletedParams) error {
@@ -244,9 +244,9 @@ RETURNING id, owner, kind, name, value, created, modified, deleted
 `
 
 type UpdateSecretParams struct {
-	Owner    sql.NullString
-	Kind     sql.NullInt32
-	Name     sql.NullString
+	Owner    string
+	Kind     int32
+	Name     string
 	Value    []byte
 	Created  sql.NullTime
 	Modified sql.NullTime

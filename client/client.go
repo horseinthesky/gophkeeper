@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"sync"
 
 	_ "github.com/lib/pq"

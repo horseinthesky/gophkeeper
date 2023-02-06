@@ -71,36 +71,18 @@ func (c *Client) SetSecret(ctx context.Context, kind SecretKind, name string, pa
 	localSecret, err := c.storage.GetSecret(
 		ctx,
 		db.GetSecretParams{
-			Owner: sql.NullString{
-				String: c.config.User,
-				Valid:  true,
-			},
-			Kind: sql.NullInt32{
-				Int32: int32(kind),
-				Valid: true,
-			},
-			Name: sql.NullString{
-				String: name,
-				Valid:  true,
-			},
+			Owner: c.config.User,
+			Kind:  int32(kind),
+			Name:  name,
 		},
 	)
 	if errors.Is(err, sql.ErrNoRows) {
 		newSecret, err := c.storage.CreateSecret(
 			ctx,
 			db.CreateSecretParams{
-				Owner: sql.NullString{
-					String: c.config.User,
-					Valid:  true,
-				},
-				Kind: sql.NullInt32{
-					Int32: int32(kind),
-					Valid: true,
-				},
-				Name: sql.NullString{
-					String: name,
-					Valid:  true,
-				},
+				Owner: c.config.User,
+				Kind:  int32(kind),
+				Name:  name,
 				Value: payload,
 				Created: sql.NullTime{
 					Time:  time.Now(),
@@ -128,18 +110,9 @@ func (c *Client) SetSecret(ctx context.Context, kind SecretKind, name string, pa
 	updateSecret, err := c.storage.UpdateSecret(
 		ctx,
 		db.UpdateSecretParams{
-			Owner: sql.NullString{
-				String: c.config.User,
-				Valid:  true,
-			},
-			Kind: sql.NullInt32{
-				Int32: int32(kind),
-				Valid: true,
-			},
-			Name: sql.NullString{
-				String: name,
-				Valid:  true,
-			},
+			Owner: c.config.User,
+			Kind:  int32(kind),
+			Name:  name,
 			Value: payload,
 			Created: sql.NullTime{
 				Time:  localSecret.Created.Time,
@@ -161,48 +134,24 @@ func (c *Client) GetSecret(ctx context.Context, kind SecretKind, name string) (d
 	return c.storage.GetSecret(
 		ctx,
 		db.GetSecretParams{
-			Owner: sql.NullString{
-				String: c.config.User,
-				Valid:  true,
-			},
-			Kind: sql.NullInt32{
-				Int32: int32(kind),
-				Valid: true,
-			},
-			Name: sql.NullString{
-				String: name,
-				Valid:  true,
-			},
+			Owner: c.config.User,
+			Kind:  int32(kind),
+			Name:  name,
 		},
 	)
 }
 
 func (c *Client) ListSecrets(ctx context.Context) ([]db.Secret, error) {
-	return c.storage.GetSecretsByUser(
-		ctx,
-		sql.NullString{
-			String: c.config.User,
-			Valid:  true,
-		},
-	)
+	return c.storage.GetSecretsByUser(ctx, c.config.User)
 }
 
 func (c *Client) DeleteSecret(ctx context.Context, kind SecretKind, name string) error {
 	return c.storage.MarkSecretDeleted(
 		ctx,
 		db.MarkSecretDeletedParams{
-			Owner: sql.NullString{
-				String: c.config.User,
-				Valid:  true,
-			},
-			Kind: sql.NullInt32{
-				Int32: int32(kind),
-				Valid: true,
-			},
-			Name: sql.NullString{
-				String: name,
-				Valid:  true,
-			},
+			Owner: c.config.User,
+			Kind: int32(kind),
+			Name: name,
 		},
 	)
 }

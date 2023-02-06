@@ -10,9 +10,9 @@ import (
 
 type Secret struct {
 	ID       int64
-	Owner    sql.NullString
-	Kind     sql.NullInt32
-	Name     sql.NullString
+	Owner    string
+	Kind     int32
+	Name     string
 	Value    []byte
 	Created  sql.NullTime
 	Modified sql.NullTime

@@ -50,6 +50,8 @@ func (s *Server) Register(ctx context.Context, in *pb.User) (*pb.Token, error) {
 		return nil, status.Errorf(codes.Internal, "failed to create access token")
 	}
 
+	s.log.Info().Msgf("new user '%s' successfully registered", in.Name)
+
 	return &pb.Token{Value: token}, nil
 }
 
@@ -81,6 +83,8 @@ func (s *Server) Login(ctx context.Context, in *pb.User) (*pb.Token, error) {
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to create access token")
 	}
+
+	s.log.Info().Msgf("existing user '%s' successfully logged in", in.Name)
 
 	return &pb.Token{Value: token}, nil
 }

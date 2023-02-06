@@ -54,8 +54,8 @@ func (c *Client) sync(ctx context.Context) {
 		if err != nil && !errors.Is(err, sql.ErrNoRows) {
 			c.log.Error().Err(err).Msgf(
 				"failed to get user '%s' secret '%s' from local db",
-				remoteSecret.Owner.String,
-				remoteSecret.Name.String,
+				remoteSecret.Owner,
+				remoteSecret.Name,
 			)
 			continue
 		}
@@ -74,16 +74,16 @@ func (c *Client) sync(ctx context.Context) {
 			if err != nil {
 				c.log.Error().Err(err).Msgf(
 					"failed to sync new user '%s' secret '%s'",
-					remoteSecret.Owner.String,
-					remoteSecret.Name.String,
+					remoteSecret.Owner,
+					remoteSecret.Name,
 				)
 				continue
 			}
 
 			c.log.Info().Msgf(
 				"successfully synced new user '%s' secret '%s'",
-				remoteSecret.Owner.String,
-				remoteSecret.Name.String,
+				remoteSecret.Owner,
+				remoteSecret.Name,
 			)
 			continue
 		}
@@ -100,16 +100,16 @@ func (c *Client) sync(ctx context.Context) {
 			if err != nil {
 				c.log.Error().Err(err).Msgf(
 					"failed to delete user '%s' secret '%s'",
-					remoteSecret.Owner.String,
-					remoteSecret.Name.String,
+					remoteSecret.Owner,
+					remoteSecret.Name,
 				)
 				continue
 			}
 
 			c.log.Info().Msgf(
 				"successfully deleted user '%s' secret '%s'",
-				remoteSecret.Owner.String,
-				remoteSecret.Name.String,
+				remoteSecret.Owner,
+				remoteSecret.Name,
 			)
 			continue
 		}
@@ -129,28 +129,22 @@ func (c *Client) sync(ctx context.Context) {
 			if err != nil {
 				c.log.Error().Err(err).Msgf(
 					"failed to update user '%s' secret '%s'",
-					remoteSecret.Owner.String,
-					remoteSecret.Name.String,
+					remoteSecret.Owner,
+					remoteSecret.Name,
 				)
 				continue
 			}
 
 			c.log.Info().Msgf(
 				"successfully synced update of user '%s' secret '%s'",
-				remoteSecret.Owner.String,
-				remoteSecret.Name.String,
+				remoteSecret.Owner,
+				remoteSecret.Name,
 			)
 		}
 	}
 
 	// Push local
-	localSecrets, err := c.storage.GetSecretsByUser(
-		ctx,
-		sql.NullString{
-			String: c.config.User,
-			Valid:  true,
-		},
-	)
+	localSecrets, err := c.storage.GetSecretsByUser(ctx, c.config.User)
 	if err != nil {
 		c.log.Error().Err(err).Msgf(
 			"failed to get user '%s' local secrets",

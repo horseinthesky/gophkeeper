@@ -31,5 +31,11 @@ func NewFileLogger(env, filename string) (zerolog.Logger, error) {
 		return zerolog.Logger{}, err
 	}
 
-	return zerolog.New(file).With().Timestamp().Logger(), nil
+	var out io.Writer
+	out = file
+	if env == "dev" {
+		out = zerolog.ConsoleWriter{Out: file, TimeFormat: time.RFC3339}
+	}
+
+	return zerolog.New(out).With().Timestamp().Logger(), nil
 }

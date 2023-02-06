@@ -10,9 +10,9 @@ import (
 
 func DBSecretToPBSecret(secret db.Secret) *pb.Secret {
 	return &pb.Secret{
-		Owner:    secret.Owner.String,
-		Kind:     secret.Kind.Int32,
-		Name:     secret.Name.String,
+		Owner:    secret.Owner,
+		Kind:     secret.Kind,
+		Name:     secret.Name,
 		Value:    secret.Value,
 		Created:  timestamppb.New(secret.Created.Time),
 		Modified: timestamppb.New(secret.Modified.Time),
@@ -22,18 +22,9 @@ func DBSecretToPBSecret(secret db.Secret) *pb.Secret {
 
 func PBSecretToDBSecret(secret *pb.Secret) db.Secret {
 	return db.Secret{
-		Owner: sql.NullString{
-			String: secret.Owner,
-			Valid: true,
-		},
-		Kind: sql.NullInt32{
-			Int32: secret.Kind,
-			Valid: true,
-		},
-		Name: sql.NullString{
-			String: secret.Name,
-			Valid: true,
-		},
+		Owner: secret.Owner,
+		Kind: secret.Kind,
+		Name: secret.Name,
 		Value: secret.Value,
 		Created: sql.NullTime{
 			Time: secret.Created.AsTime(),

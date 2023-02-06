@@ -188,8 +188,8 @@ func (c *Client) runShell(ctx context.Context) {
 		items = append(
 			items,
 			item{
-				name: secret.Name.String,
-				kind: secretKindToString[SecretKind(secret.Kind.Int32)],
+				name: secret.Name,
+				kind: secretKindToString[SecretKind(secret.Kind)],
 			},
 		)
 	}
