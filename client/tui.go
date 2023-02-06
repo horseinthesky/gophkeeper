@@ -8,6 +8,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/textinput"
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -24,14 +25,33 @@ type item struct {
 	name, kind string
 }
 
-func (s item) Title() string       { return s.name }
-func (s item) Description() string { return s.kind }
-func (s item) FilterValue() string { return s.name }
+func (i item) Title() string       { return i.name }
+func (i item) Description() string { return i.kind }
+func (i item) FilterValue() string { return i.name }
+
+type choiceItem struct {
+	name string
+}
+
+func (c choiceItem) Title() string       { return c.name }
+func (c choiceItem) Description() string { return c.name }
+func (c choiceItem) FilterValue() string { return c.name }
+
+type mode int
+
+const (
+	main mode = iota
+	choice
+	show
+)
 
 type model struct {
-	goph  *Client
-	list  list.Model
-	input textinput.Model
+	mode     mode
+	goph     *Client
+	list     list.Model
+	input    textinput.Model
+	choices  list.Model
+	viewport viewport.Model
 }
 
 func (m model) Init() tea.Cmd {
@@ -41,6 +61,14 @@ func (m model) Init() tea.Cmd {
 func (m model) View() string {
 	if m.input.Focused() {
 		return shellStyle.Render(m.input.View())
+	}
+
+	if m.mode == choice {
+		return shellStyle.Render(m.choices.View())
+	}
+
+	if m.mode == show {
+		return shellStyle.Render(m.viewport.View())
 	}
 
 	return shellStyle.Render(m.list.View())
@@ -57,13 +85,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		if m.input.Focused() {
 			switch {
-			case key.Matches(msg, keyMap.Quit):
-				return m, tea.Quit
 			case key.Matches(msg, keyMap.Enter):
 				data := strings.Fields(m.input.Value())
 				kind, _ := strconv.ParseInt(data[0], 10, 64)
 				m.goph.SetSecret(context.Background(), SecretKind(kind), data[1], []byte(data[2]))
-				insCmd := m.list.InsertItem(0, item{name: data[1], kind: data[1]})
+				insCmd := m.list.InsertItem(0, item{name: data[1], kind: secretKindToString[SecretKind(kind)]})
 				statusCmd := m.list.NewStatusMessage(statusMessageStyle("Added " + data[1]))
 				m.input.Blur()
 				m.input.SetValue("")
@@ -73,6 +99,21 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.input.Blur()
 			}
 			m.input, cmd = m.input.Update(msg)
+		} else if m.mode == choice {
+			switch {
+			case key.Matches(msg, keyMap.Back):
+				m.mode = main
+				return m, nil
+			default:
+				m.choices, cmd = m.choices.Update(msg)
+				cmds = append(cmds, cmd)
+			}
+		} else if m.mode == show {
+			switch {
+			case key.Matches(msg, keyMap.Back):
+				m.mode = main
+				return m, nil
+			}
 		} else {
 			// Don't match any of the keys below if we're actively filtering.
 			if m.list.FilterState() == list.Filtering {
@@ -80,15 +121,23 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			switch {
-			case key.Matches(msg, keyMap.Quit):
-				return m, tea.Quit
+			case key.Matches(msg, keyMap.Enter):
+				i, ok := m.list.SelectedItem().(item)
+				if !ok {
+					return m, nil
+				}
+
+				secret, _ := m.goph.GetSecret(context.Background(), stringToSecretKind[i.kind], i.name)
+				m.viewport = viewport.New(30, 5)
+				// m.viewport = viewport.New(shellStyle.GetFrameSize())
+				m.viewport.SetContent(string(secret.Value))
+				m.mode = show
+				return m, nil
 			case key.Matches(msg, keyMap.Create):
-				m.input.Focus()
-				cmd = textinput.Blink
-				// case key.Matches(msg, keyMap.Enter):
-				// 	activeProject := m.list.SelectedItem().(project.Project)
-				// 	entry := InitEntry(constants.Er, activeProject.ID, constants.P)
-				// 	return entry.Update(constants.WindowSize)
+				m.mode = choice
+				return m, nil
+				// m.input.Focus()
+				// cmd = textinput.Blink
 			case key.Matches(msg, keyMap.Delete):
 				i, ok := m.list.SelectedItem().(item)
 				if !ok {
@@ -101,12 +150,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					keyMap.Delete.SetEnabled(false)
 				}
 
-				m.goph.DeleteSecret(context.Background(), toID[i.kind], i.name)
+				m.goph.DeleteSecret(context.Background(), stringToSecretKind[i.kind], i.name)
 				statusCmd := m.list.NewStatusMessage(statusMessageStyle("Deleted " + i.Title()))
 				return m, tea.Batch(statusCmd)
 			}
 		}
 	}
+
+	// List update must be here for filtering to work
 	m.list, cmd = m.list.Update(msg)
 	cmds = append(cmds, cmd)
 
@@ -134,10 +185,28 @@ func (c *Client) runShell(ctx context.Context) {
 		if secret.Deleted.Bool {
 			continue
 		}
-		items = append(items, item{name: secret.Name.String, kind: toString[SecretKind(secret.Kind.Int32)]})
+		items = append(
+			items,
+			item{
+				name: secret.Name.String,
+				kind: secretKindToString[SecretKind(secret.Kind.Int32)],
+			},
+		)
 	}
 
-	m := model{goph: c, list: list.New(items, list.NewDefaultDelegate(), 0, 0), input: input}
+	// Init choice model
+	choices := []list.Item{}
+	for _, secretKindString := range secretKindToString {
+		choices = append(choices, choiceItem{name: secretKindString})
+	}
+
+	// Setup TUI
+	m := model{
+		goph:    c,
+		choices: list.New(choices, list.NewDefaultDelegate(), 0, 0),
+		list:    list.New(items, list.NewDefaultDelegate(), 0, 0),
+		input:   input,
+	}
 	m.list.Title = "My Secrets"
 	m.list.AdditionalShortHelpKeys = func() []key.Binding {
 		return []key.Binding{
@@ -145,7 +214,15 @@ func (c *Client) runShell(ctx context.Context) {
 			keyMap.Delete,
 		}
 	}
+	m.choices.Title = "Choose new secret type"
+	m.choices.SetFilteringEnabled(false)
+	m.choices.AdditionalShortHelpKeys = func() []key.Binding {
+		return []key.Binding{
+			keyMap.Back,
+		}
+	}
 
+	// Run TUI
 	p := tea.NewProgram(m, tea.WithAltScreen())
 
 	if _, err := p.Run(); err != nil {

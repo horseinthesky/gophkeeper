@@ -18,14 +18,14 @@ const (
 	SecretBankCard
 )
 
-var toString = map[SecretKind]string{
+var secretKindToString = map[SecretKind]string{
 	SecretCreds:    "Creds",
 	SecretText:     "Text",
 	SecretBytes:    "Bytes",
 	SecretBankCard: "Card",
 }
 
-var toID = map[string]SecretKind{
+var stringToSecretKind = map[string]SecretKind{
 	"Creds": SecretCreds,
 	"Text":  SecretText,
 	"Bytes": SecretBytes,
@@ -33,8 +33,39 @@ var toID = map[string]SecretKind{
 }
 
 func (k SecretKind) String() string {
-	return toString[k]
+	return secretKindToString[k]
 }
+
+type (
+	SecretPayload struct {
+		Notes string `json:"notes"`
+	}
+
+	CredsPayload struct {
+		SecretPayload
+		Login    string `json:"login"`
+		Password string `json:"password"`
+	}
+
+	TextPayload struct {
+		SecretPayload
+		Text string `json:"text"`
+	}
+
+	BytesPayload struct {
+		SecretPayload
+		File string `json:"file"`
+	}
+
+	CardPayload struct {
+		SecretPayload
+		Number  string `json:"number"`
+		Owner   string `json:"owner"`
+		Expires string `json:"expires"`
+		CVV     string `json:"cvv"`
+		PIN     string `json:"pin"`
+	}
+)
 
 func (c *Client) SetSecret(ctx context.Context, kind SecretKind, name string, payload []byte) (db.Secret, error) {
 	localSecret, err := c.storage.GetSecret(
