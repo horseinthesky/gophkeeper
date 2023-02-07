@@ -29,19 +29,18 @@ func (i item) Title() string       { return i.name }
 func (i item) Description() string { return i.kind }
 func (i item) FilterValue() string { return i.name }
 
-type choiceItem struct {
-	name string
-}
+type choiceItem string
 
-func (c choiceItem) Title() string       { return c.name }
-func (c choiceItem) Description() string { return c.name }
-func (c choiceItem) FilterValue() string { return c.name }
+func (c choiceItem) Title() string       { return string(c) }
+func (c choiceItem) Description() string { return "" }
+func (c choiceItem) FilterValue() string { return "" }
 
 type mode int
 
 const (
 	main mode = iota
 	choice
+	entry
 	show
 )
 
@@ -104,10 +103,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case key.Matches(msg, keyMap.Back):
 				m.mode = main
 				return m, nil
+			case key.Matches(msg, keyMap.Enter):
+				// i, _ := m.list.SelectedItem().(choiceItem)
+				// kind = stringToSecretKind[string(i)]
 			default:
 				m.choices, cmd = m.choices.Update(msg)
 				cmds = append(cmds, cmd)
 			}
+		} else if m.mode == entry {
 		} else if m.mode == show {
 			switch {
 			case key.Matches(msg, keyMap.Back):
@@ -197,14 +200,14 @@ func (c *Client) runShell(ctx context.Context) {
 	// Init choice model
 	choices := []list.Item{}
 	for _, secretKindString := range secretKindToString {
-		choices = append(choices, choiceItem{name: secretKindString})
+		choices = append(choices, choiceItem(secretKindString))
 	}
 
 	// Setup TUI
 	m := model{
 		goph:    c,
 		list:    list.New(items, list.NewDefaultDelegate(), 0, 0),
-		choices: list.New(choices, list.NewDefaultDelegate(), 30, 18),
+		choices: list.New(choices, list.NewDefaultDelegate(), 30, 30),
 		input:   input,
 	}
 	m.list.Title = "My Secrets"
