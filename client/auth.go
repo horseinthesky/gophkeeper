@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"os"
+	"time"
 
 	"gophkeeper/pb"
 	"gophkeeper/token"
@@ -69,11 +70,20 @@ func (c *Client) saveToken(token string) {
 		c.log.Error().Err(err).Msgf("field to write token to cache file")
 	}
 
-	c.log.Info().Msgf("successfully saved file to cache")
+	c.log.Info().Msgf("successfully saved token to cache file")
 }
 
 func (c *Client) login(ctx context.Context) {
 	c.log.Info().Msg("trying to log in...")
+
+	_, err := c.tm.VerifyToken(string(c.token))
+	if err == nil {
+		c.log.Info().Msg("already authenticated")
+		return
+	}
+	if errors.Is(err, token.ErrExpiredToken) {
+		c.log.Warn().Msg("token has expired...renewing")
+	}
 
 	tokenResponse, err := c.g.Login(ctx, &pb.User{Name: c.config.User, Password: c.config.Password})
 	if err != nil {
@@ -84,6 +94,8 @@ func (c *Client) login(ctx context.Context) {
 		}
 
 		switch e.Code() {
+		case codes.Unavailable:
+			c.log.Warn().Msgf("server unavailable: %s", e.Message())
 		case codes.InvalidArgument:
 			c.log.Error().Msgf("%s: user must be 3-100 letter/digits, password - 6-100 letters", e.Message())
 		case codes.NotFound:
@@ -94,7 +106,6 @@ func (c *Client) login(ctx context.Context) {
 			case "incorrect password":
 				c.log.Error().Msgf("incorrect password for user, %s", c.config.User)
 			}
-			c.log.Error().Msgf("mysterious message")
 		case codes.Internal:
 			c.log.Error().Msgf("failed to login: %s", e.Message())
 		}
@@ -105,6 +116,22 @@ func (c *Client) login(ctx context.Context) {
 	c.token = tokenResponse.Value
 
 	c.log.Info().Msgf("successfully logged in with user '%s'", c.config.User)
+}
+
+func (c *Client) loginJob(ctx context.Context) {
+	ticker := time.NewTicker(time.Duration(time.Second * 5))
+
+	c.log.Info().Msg("started periodic login check")
+
+	for {
+		select {
+		case <-ctx.Done():
+			c.log.Info().Msg("periodic login check stopped")
+			return
+		case <-ticker.C:
+			c.login(ctx)
+		}
+	}
 }
 
 func (c *Client) register(ctx context.Context) {

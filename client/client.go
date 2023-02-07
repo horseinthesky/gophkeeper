@@ -3,13 +3,13 @@ package client
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"sync"
 
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	"gophkeeper/db/db"
 	"gophkeeper/pb"
@@ -63,9 +63,27 @@ func (c *Client) Run() {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	c.loadCachedToken()
-	if c.token == "" {
-		c.login(ctx)
+
+	_, err := c.g.Ping(ctx, &emptypb.Empty{})
+	if err != nil {
+		c.log.Warn().Msg("server unavailable...working offline")
+	} else {
+		if c.token == "" {
+			c.login(ctx)
+		}
+
+		if c.token == "" {
+			c.log.Warn().Msg("not authorized...working offline")
+		} else {
+			c.sync(ctx)
+		}
 	}
+
+	c.workGroup.Add(1)
+	go func() {
+		defer c.workGroup.Done()
+		c.loginJob(ctx)
+	}()
 
 	c.workGroup.Add(1)
 	go func() {

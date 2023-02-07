@@ -4,17 +4,19 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
+
+	"google.golang.org/protobuf/types/known/emptypb"
+
 	"gophkeeper/converter"
 	"gophkeeper/db/db"
 	"gophkeeper/pb"
-	"time"
 )
 
 func (c *Client) syncJob(ctx context.Context) {
 	ticker := time.NewTicker(c.config.Sync)
 
 	c.log.Info().Msg("started periodic syncing")
-	c.sync(ctx)
 
 	for {
 		select {
@@ -22,6 +24,17 @@ func (c *Client) syncJob(ctx context.Context) {
 			c.log.Info().Msg("periodic syncing stopped")
 			return
 		case <-ticker.C:
+			_, err := c.g.Ping(ctx, &emptypb.Empty{})
+			if err != nil {
+				c.log.Warn().Msg("server unavailable...working offline")
+				continue
+			}
+
+			if c.token == "" {
+				c.log.Warn().Msg("not authorized...working offline")
+				continue
+			}
+
 			c.sync(ctx)
 			c.log.Info().Msg("sync job successfull")
 		}
@@ -29,6 +42,8 @@ func (c *Client) syncJob(ctx context.Context) {
 }
 
 func (c *Client) sync(ctx context.Context) {
+	c.log.Info().Msg("secrets sync started...")
+
 	// Pull remote
 	remotePBSecrets, err := c.g.GetSecrets(ctx, &pb.SecretsRequest{
 		Owner: c.config.User,
@@ -166,4 +181,6 @@ func (c *Client) sync(ctx context.Context) {
 		)
 		return
 	}
+
+	c.log.Info().Msg("secrets sync finished")
 }

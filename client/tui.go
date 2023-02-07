@@ -203,8 +203,8 @@ func (c *Client) runShell(ctx context.Context) {
 	// Setup TUI
 	m := model{
 		goph:    c,
-		choices: list.New(choices, list.NewDefaultDelegate(), 0, 0),
 		list:    list.New(items, list.NewDefaultDelegate(), 0, 0),
+		choices: list.New(choices, list.NewDefaultDelegate(), 30, 18),
 		input:   input,
 	}
 	m.list.Title = "My Secrets"

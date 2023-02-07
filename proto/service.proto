@@ -10,6 +10,8 @@ import "secret.proto";
 option go_package = "gophkeeper/pb";
 
 service GophKeeper {
+  rpc Ping(google.protobuf.Empty) returns (google.protobuf.Empty) {}
+
   rpc Register(User) returns (Token) {}
   rpc Login(User) returns (Token) {}
   rpc Authenticate(Token) returns (google.protobuf.Empty) {}
