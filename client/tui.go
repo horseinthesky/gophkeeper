@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -45,12 +46,15 @@ const (
 )
 
 type model struct {
-	mode     mode
-	goph     *Client
-	list     list.Model
-	input    textinput.Model
-	choices  list.Model
-	viewport viewport.Model
+	mode       mode
+	focusIndex int
+	newEntryKind  SecretKind
+	goph       *Client
+	list       list.Model
+	input      textinput.Model
+	choices    list.Model
+	inputs     []textinput.Model
+	viewport   viewport.Model
 }
 
 func (m model) Init() tea.Cmd {
@@ -64,6 +68,25 @@ func (m model) View() string {
 
 	if m.mode == choice {
 		return shellStyle.Render(m.choices.View())
+	}
+
+	if m.mode == entry {
+		var b strings.Builder
+
+		for i := range m.inputs {
+			b.WriteString(m.inputs[i].View())
+			if i < len(m.inputs)-1 {
+				b.WriteRune('\n')
+			}
+		}
+
+		button := &blurredButton
+		if m.focusIndex == len(m.inputs) {
+			button = &focusedButton
+		}
+		fmt.Fprintf(&b, "\n\n%s\n\n", *button)
+
+		return b.String()
 	}
 
 	if m.mode == show {
@@ -104,13 +127,69 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.mode = main
 				return m, nil
 			case key.Matches(msg, keyMap.Enter):
-				// i, _ := m.list.SelectedItem().(choiceItem)
-				// kind = stringToSecretKind[string(i)]
+				i, _ := m.choices.SelectedItem().(choiceItem)
+				kind := stringToSecretKind[string(i)]
+				m.inputs = entryMap[kind]()
+				m.newEntryKind = kind
+				m.mode = entry
+				return m, nil
 			default:
 				m.choices, cmd = m.choices.Update(msg)
 				cmds = append(cmds, cmd)
 			}
 		} else if m.mode == entry {
+			switch msg.String() {
+			// Go back to secrets list
+			case "esc":
+				m.mode = main
+				return m, nil
+			// Set focus to next input
+			case "tab", "shift+tab", "enter", "up", "down":
+				s := msg.String()
+
+				// Did the user press enter while the submit button was focused?
+				// If so, exit.
+				if s == "enter" && m.focusIndex == len(m.inputs) {
+					dbSecret := m.goph.secretFromEntry(m.newEntryKind, m.inputs)
+
+					m.mode = main
+					insCmd := m.list.InsertItem(0, item{name: dbSecret.Name, kind: secretKindToString[m.newEntryKind]})
+					statusCmd := m.list.NewStatusMessage(statusMessageStyle("Added " + m.inputs[0].Value()))
+					return m, tea.Batch(insCmd, statusCmd)
+				}
+
+				// Cycle indexes
+				if s == "up" || s == "shift+tab" {
+					m.focusIndex--
+				} else {
+					m.focusIndex++
+				}
+
+				if m.focusIndex > len(m.inputs) {
+					m.focusIndex = 0
+				} else if m.focusIndex < 0 {
+					m.focusIndex = len(m.inputs)
+				}
+
+				cmds := make([]tea.Cmd, len(m.inputs))
+				for i := 0; i <= len(m.inputs)-1; i++ {
+					if i == m.focusIndex {
+						// Set focused state
+						cmds[i] = m.inputs[i].Focus()
+						m.inputs[i].PromptStyle = focusedStyle
+						m.inputs[i].TextStyle = focusedStyle
+						continue
+					}
+					// Remove focused state
+					m.inputs[i].Blur()
+					m.inputs[i].PromptStyle = noStyle
+					m.inputs[i].TextStyle = noStyle
+				}
+
+				return m, tea.Batch(cmds...)
+			}
+			cmd := m.updateInputs(msg)
+			return m, cmd
 		} else if m.mode == show {
 			switch {
 			case key.Matches(msg, keyMap.Back):
@@ -165,6 +244,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	cmds = append(cmds, cmd)
 
 	return m, tea.Batch(cmds...)
+}
+
+func (m *model) updateInputs(msg tea.Msg) tea.Cmd {
+	cmds := make([]tea.Cmd, len(m.inputs))
+
+	// Only text inputs with Focus() set will respond, so it's safe to simply
+	// update all of them here without any further logic.
+	for i := range m.inputs {
+		m.inputs[i], cmds[i] = m.inputs[i].Update(msg)
+	}
+
+	return tea.Batch(cmds...)
 }
 
 func (c *Client) runShell(ctx context.Context) {

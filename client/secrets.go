@@ -3,10 +3,13 @@ package client
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"time"
 
 	"gophkeeper/db/db"
+
+	"github.com/charmbracelet/bubbles/textinput"
 )
 
 type SecretKind int32
@@ -15,21 +18,21 @@ const (
 	SecretCreds SecretKind = iota
 	SecretText
 	SecretBytes
-	SecretBankCard
+	SecretCard
 )
 
 var secretKindToString = map[SecretKind]string{
-	SecretCreds:    "Creds",
-	SecretText:     "Text",
-	SecretBytes:    "Bytes",
-	SecretBankCard: "Card",
+	SecretCreds: "Creds",
+	SecretText:  "Text",
+	SecretBytes: "Bytes",
+	SecretCard:  "Card",
 }
 
 var stringToSecretKind = map[string]SecretKind{
 	"Creds": SecretCreds,
 	"Text":  SecretText,
 	"Bytes": SecretBytes,
-	"Card":  SecretBankCard,
+	"Card":  SecretCard,
 }
 
 func (k SecretKind) String() string {
@@ -37,35 +40,50 @@ func (k SecretKind) String() string {
 }
 
 type (
-	SecretPayload struct {
-		Notes string `json:"notes"`
-	}
-
 	CredsPayload struct {
-		SecretPayload
 		Login    string `json:"login"`
 		Password string `json:"password"`
+		Notes    string `json:"notes"`
 	}
 
 	TextPayload struct {
-		SecretPayload
-		Text string `json:"text"`
+		Text  string `json:"text"`
+		Notes string `json:"notes"`
 	}
 
 	BytesPayload struct {
-		SecretPayload
-		File string `json:"file"`
+		File  string `json:"file"`
+		Notes string `json:"notes"`
 	}
 
 	CardPayload struct {
-		SecretPayload
-		Number  string `json:"number"`
-		Owner   string `json:"owner"`
-		Expires string `json:"expires"`
-		CVV     string `json:"cvv"`
-		PIN     string `json:"pin"`
+		Number string `json:"number"`
+		Owner  string `json:"owner"`
+		EXP    string `json:"exp"`
+		CVV    string `json:"cvv"`
+		PIN    string `json:"pin"`
+		Notes  string `json:"notes"`
 	}
 )
+
+func (c *Client) secretFromEntry(kind SecretKind, inputs []textinput.Model) db.Secret {
+	switch kind {
+	case SecretCreds:
+		secretPayload := CredsPayload{
+			Login:    inputs[1].Value(),
+			Password: inputs[2].Value(),
+			Notes:    inputs[3].Value(),
+		}
+
+		payloadBytes, _ := json.Marshal(secretPayload)
+		dbSecret, err := c.SetSecret(context.Background(), kind, inputs[0].Value(), payloadBytes)
+		if err != nil {
+			panic("bla")
+		}
+		return dbSecret
+	}
+	return db.Secret{}
+}
 
 func (c *Client) SetSecret(ctx context.Context, kind SecretKind, name string, payload []byte) (db.Secret, error) {
 	localSecret, err := c.storage.GetSecret(
@@ -150,8 +168,8 @@ func (c *Client) DeleteSecret(ctx context.Context, kind SecretKind, name string)
 		ctx,
 		db.MarkSecretDeletedParams{
 			Owner: c.config.User,
-			Kind: int32(kind),
-			Name: name,
+			Kind:  int32(kind),
+			Name:  name,
 		},
 	)
 }
