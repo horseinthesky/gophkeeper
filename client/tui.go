@@ -187,14 +187,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			switch {
 			case key.Matches(msg, keyMap.Enter):
-				i, ok := m.list.SelectedItem().(item)
-				if !ok {
-					return m, nil
-				}
+				i, _ := m.list.SelectedItem().(item)
 
-				secret, _ := m.goph.GetSecret(context.Background(), stringToSecretKind[i.kind], i.name)
 				m.viewport = viewport.New(70, 10)
-				m.viewport.SetContent(string(secret.Value))
+				secretContent, err := m.goph.loadSecretFromEntry(stringToSecretKind[i.kind], i.name)
+				if err != nil {
+					m.viewport.SetContent(err.Error())
+				} else {
+					m.viewport.SetContent(secretContent)
+				}
 				m.mode = show
 				return m, nil
 			case key.Matches(msg, keyMap.Create):
@@ -251,7 +252,7 @@ func (c *Client) runShell(ctx context.Context) {
 	// Init list model
 	items := []list.Item{}
 
-	secrets, err := c.ListSecrets(ctx)
+	secrets, err := c.storage.GetSecretsByUser(ctx, c.config.User)
 	if err != nil {
 		c.log.Error().Err(err).Msg("failed to list user '%s' secrets")
 		return

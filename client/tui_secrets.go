@@ -97,6 +97,8 @@ func (c *Client) storeSecretFromEntry(kind SecretKind, inputs []textinput.Model)
 		}
 
 		payloadBytes, _ = json.Marshal(secretPayload)
+	default:
+		return db.Secret{}, fmt.Errorf("unsupported secret kind: %s", secretKindToString[kind])
 	}
 
 	dbSecret, err := c.SetSecret(context.Background(), kind, secretName, payloadBytes)
@@ -105,4 +107,97 @@ func (c *Client) storeSecretFromEntry(kind SecretKind, inputs []textinput.Model)
 	}
 
 	return dbSecret, nil
+}
+
+func (c *Client) loadSecretFromEntry(kind SecretKind, name string) (string, error) {
+	dbSecret, err := c.storage.GetSecret(
+		context.Background(),
+		db.GetSecretParams{
+			Owner: c.config.User,
+			Kind:  int32(kind),
+			Name:  name,
+		},
+	)
+	if err != nil {
+		return "", nil
+	}
+
+	switch kind {
+	case SecretCreds:
+		var secretPayload CredsPayload
+		err := json.Unmarshal(dbSecret.Value, &secretPayload)
+		if err != nil {
+			return "", err
+		}
+		return fmt.Sprintf(
+			` Secret: %s
+
+ Login: %s
+ Password: %s
+ Notes: %s
+`,
+			dbSecret.Name,
+			secretPayload.Login,
+			secretPayload.Password,
+			secretPayload.Notes,
+		), nil
+	case SecretText:
+		var secretPayload TextPayload
+		err := json.Unmarshal(dbSecret.Value, &secretPayload)
+		if err != nil {
+			return "", err
+		}
+		return fmt.Sprintf(
+			` Secret: %s
+
+ Text: %s
+ Notes: %s
+`,
+			dbSecret.Name,
+			secretPayload.Text,
+			secretPayload.Notes,
+		), nil
+	case SecretBytes:
+		var secretPayload BytesPayload
+		err := json.Unmarshal(dbSecret.Value, &secretPayload)
+		if err != nil {
+			return "", err
+		}
+		return fmt.Sprintf(
+			` Secret: %s
+
+ Filename: %s
+ Notes: %s
+`,
+			dbSecret.Name,
+			secretPayload.Filename,
+			secretPayload.Notes,
+		), nil
+	case SecretCard:
+		var secretPayload CardPayload
+		err := json.Unmarshal(dbSecret.Value, &secretPayload)
+		if err != nil {
+			return "", err
+		}
+		return fmt.Sprintf(
+			` Secret: %s
+
+ Number: %s
+ Owner: %s
+ EXP: %s
+ CVV: %s
+ PIN: %s
+ Notes: %s
+`,
+			dbSecret.Name,
+			secretPayload.Number,
+			secretPayload.Owner,
+			secretPayload.EXP,
+			secretPayload.CVV,
+			secretPayload.PIN,
+			secretPayload.Notes,
+		), nil
+	}
+
+	return "", fmt.Errorf("unsupported secret kind: %s", secretKindToString[kind])
 }

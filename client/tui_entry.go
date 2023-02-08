@@ -21,9 +21,9 @@ var (
 
 var entryMap = map[SecretKind]func() []textinput.Model{
 	SecretCreds: newCreds,
-	SecretText: newText,
+	SecretText:  newText,
 	SecretBytes: newBytes,
-	SecretCard: newCard,
+	SecretCard:  newCard,
 }
 
 func newCreds() []textinput.Model {
@@ -112,7 +112,7 @@ func newBytes() []textinput.Model {
 }
 
 func newCard() []textinput.Model {
-	inputs := make([]textinput.Model, 5)
+	inputs := make([]textinput.Model, 7)
 
 	var t textinput.Model
 	for i := range inputs {
@@ -136,6 +136,12 @@ func newCard() []textinput.Model {
 			t.Placeholder = "CVV"
 			t.EchoMode = textinput.EchoPassword
 			t.EchoCharacter = '•'
+		case 5:
+			t.Placeholder = "PIN"
+			t.EchoMode = textinput.EchoPassword
+			t.EchoCharacter = '•'
+		case 6:
+			t.Placeholder = "Notes"
 		}
 
 		inputs[i] = t

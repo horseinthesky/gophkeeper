@@ -110,9 +110,9 @@ func (c *Client) GetSecret(ctx context.Context, kind SecretKind, name string) (d
 	)
 }
 
-func (c *Client) ListSecrets(ctx context.Context) ([]db.Secret, error) {
-	return c.storage.GetSecretsByUser(ctx, c.config.User)
-}
+// func (c *Client) ListSecrets(ctx context.Context) ([]db.Secret, error) {
+// 	return c.storage.GetSecretsByUser(ctx, c.config.User)
+// }
 
 func (c *Client) DeleteSecret(ctx context.Context, kind SecretKind, name string) error {
 	return c.storage.MarkSecretDeleted(
