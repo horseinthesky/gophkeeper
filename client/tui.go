@@ -190,7 +190,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				i, _ := m.list.SelectedItem().(item)
 
 				m.viewport = viewport.New(70, 10)
-				secretContent, err := m.goph.loadSecretFromEntry(stringToSecretKind[i.kind], i.name)
+				secretContent, err := m.goph.loadSecretContentFromEntry(stringToSecretKind[i.kind], i.name)
 				if err != nil {
 					m.viewport.SetContent(err.Error())
 				} else {

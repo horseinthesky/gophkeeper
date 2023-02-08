@@ -99,21 +99,6 @@ func (c *Client) SetSecret(ctx context.Context, kind SecretKind, name string, pa
 	return updateSecret, nil
 }
 
-func (c *Client) GetSecret(ctx context.Context, kind SecretKind, name string) (db.Secret, error) {
-	return c.storage.GetSecret(
-		ctx,
-		db.GetSecretParams{
-			Owner: c.config.User,
-			Kind:  int32(kind),
-			Name:  name,
-		},
-	)
-}
-
-// func (c *Client) ListSecrets(ctx context.Context) ([]db.Secret, error) {
-// 	return c.storage.GetSecretsByUser(ctx, c.config.User)
-// }
-
 func (c *Client) DeleteSecret(ctx context.Context, kind SecretKind, name string) error {
 	return c.storage.MarkSecretDeleted(
 		ctx,

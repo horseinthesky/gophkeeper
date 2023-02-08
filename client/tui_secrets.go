@@ -109,7 +109,7 @@ func (c *Client) storeSecretFromEntry(kind SecretKind, inputs []textinput.Model)
 	return dbSecret, nil
 }
 
-func (c *Client) loadSecretFromEntry(kind SecretKind, name string) (string, error) {
+func (c *Client) loadSecretContentFromEntry(kind SecretKind, name string) (string, error) {
 	dbSecret, err := c.storage.GetSecret(
 		context.Background(),
 		db.GetSecretParams{
@@ -131,12 +131,16 @@ func (c *Client) loadSecretFromEntry(kind SecretKind, name string) (string, erro
 		}
 		return fmt.Sprintf(
 			` Secret: %s
+ Created: %s
+ Modified: %s
 
  Login: %s
  Password: %s
  Notes: %s
 `,
 			dbSecret.Name,
+			dbSecret.Created.Time,
+			dbSecret.Modified.Time,
 			secretPayload.Login,
 			secretPayload.Password,
 			secretPayload.Notes,
@@ -149,11 +153,15 @@ func (c *Client) loadSecretFromEntry(kind SecretKind, name string) (string, erro
 		}
 		return fmt.Sprintf(
 			` Secret: %s
+ Created: %s
+ Modified: %s
 
  Text: %s
  Notes: %s
 `,
 			dbSecret.Name,
+			dbSecret.Created.Time,
+			dbSecret.Modified.Time,
 			secretPayload.Text,
 			secretPayload.Notes,
 		), nil
@@ -165,11 +173,15 @@ func (c *Client) loadSecretFromEntry(kind SecretKind, name string) (string, erro
 		}
 		return fmt.Sprintf(
 			` Secret: %s
+ Created: %s
+ Modified: %s
 
  Filename: %s
  Notes: %s
 `,
 			dbSecret.Name,
+			dbSecret.Created.Time,
+			dbSecret.Modified.Time,
 			secretPayload.Filename,
 			secretPayload.Notes,
 		), nil
@@ -181,6 +193,8 @@ func (c *Client) loadSecretFromEntry(kind SecretKind, name string) (string, erro
 		}
 		return fmt.Sprintf(
 			` Secret: %s
+ Created: %s
+ Modified: %s
 
  Number: %s
  Owner: %s
@@ -190,6 +204,8 @@ func (c *Client) loadSecretFromEntry(kind SecretKind, name string) (string, erro
  Notes: %s
 `,
 			dbSecret.Name,
+			dbSecret.Created.Time,
+			dbSecret.Modified.Time,
 			secretPayload.Number,
 			secretPayload.Owner,
 			secretPayload.EXP,
