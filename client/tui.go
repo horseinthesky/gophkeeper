@@ -99,7 +99,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		h, v := shellStyle.GetFrameSize()
 		m.list.SetSize(msg.Width-h, msg.Height-v)
 	case tea.KeyMsg:
-		if m.mode == choice {
+		switch m.mode {
+		case choice:
 			switch {
 			case key.Matches(msg, keyMap.Back):
 				m.mode = main
@@ -115,7 +116,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.choices, cmd = m.choices.Update(msg)
 				cmds = append(cmds, cmd)
 			}
-		} else if m.mode == entry {
+		case entry:
 			switch msg.String() {
 			// Go back to secrets list
 			case "esc":
@@ -172,13 +173,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			cmd := m.updateInputs(msg)
 			return m, cmd
-		} else if m.mode == show {
+		case show:
 			switch {
 			case key.Matches(msg, keyMap.Back):
 				m.mode = main
 				return m, nil
 			}
-		} else {
+		default:
 			// Don't match any of the keys below if we're actively filtering.
 			if m.list.FilterState() == list.Filtering {
 				break
