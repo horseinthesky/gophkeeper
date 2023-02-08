@@ -3,13 +3,10 @@ package client
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"time"
 
 	"gophkeeper/db/db"
-
-	"github.com/charmbracelet/bubbles/textinput"
 )
 
 type SecretKind int32
@@ -37,52 +34,6 @@ var stringToSecretKind = map[string]SecretKind{
 
 func (k SecretKind) String() string {
 	return secretKindToString[k]
-}
-
-type (
-	CredsPayload struct {
-		Login    string `json:"login"`
-		Password string `json:"password"`
-		Notes    string `json:"notes"`
-	}
-
-	TextPayload struct {
-		Text  string `json:"text"`
-		Notes string `json:"notes"`
-	}
-
-	BytesPayload struct {
-		File  string `json:"file"`
-		Notes string `json:"notes"`
-	}
-
-	CardPayload struct {
-		Number string `json:"number"`
-		Owner  string `json:"owner"`
-		EXP    string `json:"exp"`
-		CVV    string `json:"cvv"`
-		PIN    string `json:"pin"`
-		Notes  string `json:"notes"`
-	}
-)
-
-func (c *Client) secretFromEntry(kind SecretKind, inputs []textinput.Model) db.Secret {
-	switch kind {
-	case SecretCreds:
-		secretPayload := CredsPayload{
-			Login:    inputs[1].Value(),
-			Password: inputs[2].Value(),
-			Notes:    inputs[3].Value(),
-		}
-
-		payloadBytes, _ := json.Marshal(secretPayload)
-		dbSecret, err := c.SetSecret(context.Background(), kind, inputs[0].Value(), payloadBytes)
-		if err != nil {
-			panic("bla")
-		}
-		return dbSecret
-	}
-	return db.Secret{}
 }
 
 func (c *Client) SetSecret(ctx context.Context, kind SecretKind, name string, payload []byte) (db.Secret, error) {

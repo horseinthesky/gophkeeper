@@ -3,7 +3,6 @@ package client
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
@@ -46,15 +45,14 @@ const (
 )
 
 type model struct {
-	mode       mode
-	focusIndex int
-	newEntryKind  SecretKind
-	goph       *Client
-	list       list.Model
-	input      textinput.Model
-	choices    list.Model
-	inputs     []textinput.Model
-	viewport   viewport.Model
+	mode         mode
+	focusIndex   int
+	newEntryKind SecretKind
+	goph         *Client
+	list         list.Model
+	choices      list.Model
+	inputs       []textinput.Model
+	viewport     viewport.Model
 }
 
 func (m model) Init() tea.Cmd {
@@ -62,10 +60,6 @@ func (m model) Init() tea.Cmd {
 }
 
 func (m model) View() string {
-	if m.input.Focused() {
-		return shellStyle.Render(m.input.View())
-	}
-
 	if m.mode == choice {
 		return shellStyle.Render(m.choices.View())
 	}
@@ -105,23 +99,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		h, v := shellStyle.GetFrameSize()
 		m.list.SetSize(msg.Width-h, msg.Height-v)
 	case tea.KeyMsg:
-		if m.input.Focused() {
-			switch {
-			case key.Matches(msg, keyMap.Enter):
-				data := strings.Fields(m.input.Value())
-				kind, _ := strconv.ParseInt(data[0], 10, 64)
-				m.goph.SetSecret(context.Background(), SecretKind(kind), data[1], []byte(data[2]))
-				insCmd := m.list.InsertItem(0, item{name: data[1], kind: secretKindToString[SecretKind(kind)]})
-				statusCmd := m.list.NewStatusMessage(statusMessageStyle("Added " + data[1]))
-				m.input.Blur()
-				m.input.SetValue("")
-				return m, tea.Batch(insCmd, statusCmd)
-			case key.Matches(msg, keyMap.Back):
-				m.input.SetValue("")
-				m.input.Blur()
-			}
-			m.input, cmd = m.input.Update(msg)
-		} else if m.mode == choice {
+		if m.mode == choice {
 			switch {
 			case key.Matches(msg, keyMap.Back):
 				m.mode = main
@@ -150,7 +128,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				// Did the user press enter while the submit button was focused?
 				// If so, exit.
 				if s == "enter" && m.focusIndex == len(m.inputs) {
-					dbSecret := m.goph.secretFromEntry(m.newEntryKind, m.inputs)
+					dbSecret, err := m.goph.storeSecretFromEntry(m.newEntryKind, m.inputs)
+					if err != nil {
+						m.goph.log.Error().Err(err).Msgf("failed to save secret %s", m.inputs[0].Value())
+						return m, nil
+					}
 
 					m.mode = main
 					insCmd := m.list.InsertItem(0, item{name: dbSecret.Name, kind: secretKindToString[m.newEntryKind]})
@@ -210,8 +192,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 
 				secret, _ := m.goph.GetSecret(context.Background(), stringToSecretKind[i.kind], i.name)
-				m.viewport = viewport.New(30, 5)
-				// m.viewport = viewport.New(shellStyle.GetFrameSize())
+				m.viewport = viewport.New(70, 10)
 				m.viewport.SetContent(string(secret.Value))
 				m.mode = show
 				return m, nil
@@ -299,7 +280,6 @@ func (c *Client) runShell(ctx context.Context) {
 		goph:    c,
 		list:    list.New(items, list.NewDefaultDelegate(), 0, 0),
 		choices: list.New(choices, list.NewDefaultDelegate(), 30, 30),
-		input:   input,
 	}
 	m.list.Title = "My Secrets"
 	m.list.AdditionalShortHelpKeys = func() []key.Binding {
