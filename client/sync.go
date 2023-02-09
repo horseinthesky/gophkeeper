@@ -6,6 +6,7 @@ import (
 	"errors"
 	"time"
 
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"gophkeeper/converter"
@@ -43,6 +44,10 @@ func (c *Client) syncJob(ctx context.Context) {
 
 func (c *Client) sync(ctx context.Context) {
 	c.log.Info().Msg("secrets sync started...")
+
+	// Provide token
+	md := metadata.Pairs("token", c.token)
+	ctx = metadata.NewOutgoingContext(ctx, md)
 
 	// Pull remote
 	remotePBSecrets, err := c.g.GetSecrets(ctx, &pb.SecretsRequest{

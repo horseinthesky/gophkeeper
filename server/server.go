@@ -55,7 +55,7 @@ func (s *Server) Run() {
 
 	go s.cleanJob(context.Background())
 
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(s.checkAuth))
 	pb.RegisterGophKeeperServer(grpcServer, s)
 	reflection.Register(grpcServer)
 

@@ -9,21 +9,15 @@ import (
 
 var (
 	buildTime string
-	version string = "0.0.1"
+	version   string = "0.0.1"
 )
 
 func main() {
-	b := flag.Bool("b", false, "Build date")
 	v := flag.Bool("v", false, "Gophkeeper version")
 	flag.Parse()
 
-	if *b {
-		fmt.Printf("Gophkeeper client build date: %s\n", buildTime)
-		return
-	}
-
 	if *v {
-		fmt.Printf("Gophkeeper client version: %s\n", version)
+		fmt.Printf("Gophkeeper client\n\nVersion: %s\nBuild date: %s\n", version, buildTime)
 		return
 	}
 

@@ -74,7 +74,7 @@ func (c *Client) saveToken(token string) {
 }
 
 func (c *Client) login(ctx context.Context) {
-	c.log.Info().Msg("trying to log in...")
+	c.log.Info().Msg("periodic logging in...")
 
 	_, err := c.tm.VerifyToken(string(c.token))
 	if err == nil {
@@ -112,10 +112,10 @@ func (c *Client) login(ctx context.Context) {
 		return
 	}
 
-	c.saveToken(tokenResponse.Value)
 	c.token = tokenResponse.Value
-
 	c.log.Info().Msgf("successfully logged in with user '%s'", c.config.User)
+
+	c.saveToken(tokenResponse.Value)
 }
 
 func (c *Client) loginJob(ctx context.Context) {

@@ -14,7 +14,6 @@ service GophKeeper {
 
   rpc Register(User) returns (Token) {}
   rpc Login(User) returns (Token) {}
-  rpc Authenticate(Token) returns (google.protobuf.Empty) {}
 
   rpc SetSecret(Secret) returns (google.protobuf.Empty) {}
   rpc GetSecret(SecretRequest) returns (Secret) {}
