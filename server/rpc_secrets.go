@@ -13,57 +13,6 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func (s *Server) SetSecret(ctx context.Context, in *pb.Secret) (*emptypb.Empty, error) {
-	s.log.Info().Msgf("user '%s' sent his '%s' secret '%s'", in.Owner, in.Kind, in.Name)
-
-	_, err := s.storage.CreateSecret(
-		ctx,
-		db.CreateSecretParams{
-			Owner: in.Owner,
-			Kind: in.Kind,
-			Name: in.Name,
-			Value: in.Value,
-			Created: sql.NullTime{
-				Time:  in.Created.AsTime(),
-				Valid: true,
-			},
-			Modified: sql.NullTime{
-				Time:  in.Modified.AsTime(),
-				Valid: true,
-			},
-		},
-	)
-	if err != nil {
-		s.log.Error().Err(err).Msgf("failed to save user '%s' '%s' secret '%s'", in.Owner, in.Kind, in.Name)
-		return nil, status.Error(codes.Internal, "failed to save secret to db")
-	}
-
-	s.log.Info().Msgf("successfully saved user '%s' '%s' secret '%s'", in.Owner, in.Kind, in.Name)
-
-	return &emptypb.Empty{}, nil
-}
-
-func (s *Server) GetSecret(ctx context.Context, in *pb.SecretRequest) (*pb.Secret, error) {
-	s.log.Info().Msgf("user '%s' requested his '%s' secret '%s'", in.Owner, in.Kind, in.Name)
-
-	secret, err := s.storage.GetSecret(
-		ctx,
-		db.GetSecretParams{
-			Owner: in.Owner,
-			Kind: in.Kind,
-			Name: in.Name,
-		},
-	)
-	if err != nil {
-		s.log.Error().Err(err).Msgf("failed to get user '%s' '%s' secret '%s'", in.Owner, in.Kind, in.Name)
-		return nil, status.Error(codes.Internal, "failed to get secret from db")
-	}
-
-	s.log.Info().Msgf("successfully got user '%s' '%s' secret '%s'", in.Owner, in.Kind, in.Name)
-
-	return converter.DBSecretToPBSecret(secret), nil
-}
-
 func (s *Server) SetSecrets(ctx context.Context, in *pb.Secrets) (*emptypb.Empty, error) {
 	for _, pbSecret := range in.Secrets {
 		remoteSecret := converter.PBSecretToDBSecret(pbSecret)

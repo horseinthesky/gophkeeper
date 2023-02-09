@@ -26,12 +26,8 @@ type GophKeeperClient interface {
 	Ping(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*empty.Empty, error)
 	Register(ctx context.Context, in *User, opts ...grpc.CallOption) (*Token, error)
 	Login(ctx context.Context, in *User, opts ...grpc.CallOption) (*Token, error)
-	Authenticate(ctx context.Context, in *Token, opts ...grpc.CallOption) (*empty.Empty, error)
-	SetSecret(ctx context.Context, in *Secret, opts ...grpc.CallOption) (*empty.Empty, error)
-	GetSecret(ctx context.Context, in *SecretRequest, opts ...grpc.CallOption) (*Secret, error)
 	SetSecrets(ctx context.Context, in *Secrets, opts ...grpc.CallOption) (*empty.Empty, error)
 	GetSecrets(ctx context.Context, in *SecretsRequest, opts ...grpc.CallOption) (*Secrets, error)
-	MarkDeleted(ctx context.Context, in *SecretRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 }
 
 type gophKeeperClient struct {
@@ -69,33 +65,6 @@ func (c *gophKeeperClient) Login(ctx context.Context, in *User, opts ...grpc.Cal
 	return out, nil
 }
 
-func (c *gophKeeperClient) Authenticate(ctx context.Context, in *Token, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/gophkeeper.GophKeeper/Authenticate", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *gophKeeperClient) SetSecret(ctx context.Context, in *Secret, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/gophkeeper.GophKeeper/SetSecret", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *gophKeeperClient) GetSecret(ctx context.Context, in *SecretRequest, opts ...grpc.CallOption) (*Secret, error) {
-	out := new(Secret)
-	err := c.cc.Invoke(ctx, "/gophkeeper.GophKeeper/GetSecret", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *gophKeeperClient) SetSecrets(ctx context.Context, in *Secrets, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/gophkeeper.GophKeeper/SetSecrets", in, out, opts...)
@@ -114,15 +83,6 @@ func (c *gophKeeperClient) GetSecrets(ctx context.Context, in *SecretsRequest, o
 	return out, nil
 }
 
-func (c *gophKeeperClient) MarkDeleted(ctx context.Context, in *SecretRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/gophkeeper.GophKeeper/MarkDeleted", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // GophKeeperServer is the server API for GophKeeper service.
 // All implementations must embed UnimplementedGophKeeperServer
 // for forward compatibility
@@ -130,12 +90,8 @@ type GophKeeperServer interface {
 	Ping(context.Context, *empty.Empty) (*empty.Empty, error)
 	Register(context.Context, *User) (*Token, error)
 	Login(context.Context, *User) (*Token, error)
-	Authenticate(context.Context, *Token) (*empty.Empty, error)
-	SetSecret(context.Context, *Secret) (*empty.Empty, error)
-	GetSecret(context.Context, *SecretRequest) (*Secret, error)
 	SetSecrets(context.Context, *Secrets) (*empty.Empty, error)
 	GetSecrets(context.Context, *SecretsRequest) (*Secrets, error)
-	MarkDeleted(context.Context, *SecretRequest) (*empty.Empty, error)
 	mustEmbedUnimplementedGophKeeperServer()
 }
 
@@ -152,23 +108,11 @@ func (UnimplementedGophKeeperServer) Register(context.Context, *User) (*Token, e
 func (UnimplementedGophKeeperServer) Login(context.Context, *User) (*Token, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
-func (UnimplementedGophKeeperServer) Authenticate(context.Context, *Token) (*empty.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Authenticate not implemented")
-}
-func (UnimplementedGophKeeperServer) SetSecret(context.Context, *Secret) (*empty.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetSecret not implemented")
-}
-func (UnimplementedGophKeeperServer) GetSecret(context.Context, *SecretRequest) (*Secret, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetSecret not implemented")
-}
 func (UnimplementedGophKeeperServer) SetSecrets(context.Context, *Secrets) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetSecrets not implemented")
 }
 func (UnimplementedGophKeeperServer) GetSecrets(context.Context, *SecretsRequest) (*Secrets, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetSecrets not implemented")
-}
-func (UnimplementedGophKeeperServer) MarkDeleted(context.Context, *SecretRequest) (*empty.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method MarkDeleted not implemented")
 }
 func (UnimplementedGophKeeperServer) mustEmbedUnimplementedGophKeeperServer() {}
 
@@ -237,60 +181,6 @@ func _GophKeeper_Login_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
-func _GophKeeper_Authenticate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Token)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(GophKeeperServer).Authenticate(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/gophkeeper.GophKeeper/Authenticate",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GophKeeperServer).Authenticate(ctx, req.(*Token))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _GophKeeper_SetSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Secret)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(GophKeeperServer).SetSecret(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/gophkeeper.GophKeeper/SetSecret",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GophKeeperServer).SetSecret(ctx, req.(*Secret))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _GophKeeper_GetSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SecretRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(GophKeeperServer).GetSecret(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/gophkeeper.GophKeeper/GetSecret",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GophKeeperServer).GetSecret(ctx, req.(*SecretRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _GophKeeper_SetSecrets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Secrets)
 	if err := dec(in); err != nil {
@@ -327,24 +217,6 @@ func _GophKeeper_GetSecrets_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
-func _GophKeeper_MarkDeleted_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SecretRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(GophKeeperServer).MarkDeleted(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/gophkeeper.GophKeeper/MarkDeleted",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GophKeeperServer).MarkDeleted(ctx, req.(*SecretRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // GophKeeper_ServiceDesc is the grpc.ServiceDesc for GophKeeper service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -365,28 +237,12 @@ var GophKeeper_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _GophKeeper_Login_Handler,
 		},
 		{
-			MethodName: "Authenticate",
-			Handler:    _GophKeeper_Authenticate_Handler,
-		},
-		{
-			MethodName: "SetSecret",
-			Handler:    _GophKeeper_SetSecret_Handler,
-		},
-		{
-			MethodName: "GetSecret",
-			Handler:    _GophKeeper_GetSecret_Handler,
-		},
-		{
 			MethodName: "SetSecrets",
 			Handler:    _GophKeeper_SetSecrets_Handler,
 		},
 		{
 			MethodName: "GetSecrets",
 			Handler:    _GophKeeper_GetSecrets_Handler,
-		},
-		{
-			MethodName: "MarkDeleted",
-			Handler:    _GophKeeper_MarkDeleted_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
