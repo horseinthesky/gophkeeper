@@ -57,8 +57,11 @@ proto:
 		--go-grpc_opt=paths=source_relative \
 	proto/*.proto
 
+cert:
+	cd certs ; ./gen.sh ; cd ..
+
 build:
 	go build -ldflags "-X 'main.buildTime=$(date +'%Y/%m/%d %H:%M:%S')'" -o gc ./client.go
 	go build -o gs ./server.go
 
-.PHONY: init dev mkdb es ec rmdb refreshdb migrateup migratedown sqlc proto build
+.PHONY: init dev mkdb es ec rmdb refreshdb migrateup migratedown sqlc proto cert build

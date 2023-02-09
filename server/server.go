@@ -12,8 +12,9 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	"gophkeeper/db/db"
-	"gophkeeper/token"
 	"gophkeeper/pb"
+	"gophkeeper/token"
+	"gophkeeper/certs"
 )
 
 type Server struct {
@@ -55,7 +56,15 @@ func (s *Server) Run() {
 
 	go s.cleanJob(context.Background())
 
-	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(s.checkAuth))
+	creds, err := certs.LoadServerCreds()
+	if err != nil {
+		log.Fatalf("failed to run server: %s", err)
+	}
+
+	grpcServer := grpc.NewServer(
+		grpc.UnaryInterceptor(s.checkAuth),
+		grpc.Creds(creds),
+	)
 	pb.RegisterGophKeeperServer(grpcServer, s)
 	reflection.Register(grpcServer)
 

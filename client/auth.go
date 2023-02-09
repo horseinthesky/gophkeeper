@@ -95,7 +95,7 @@ func (c *Client) login(ctx context.Context) {
 
 		switch e.Code() {
 		case codes.Unavailable:
-			c.log.Warn().Msgf("server unavailable: %s", e.Message())
+			c.log.Warn().Msgf("server connection failed: %s", e.Message())
 		case codes.InvalidArgument:
 			c.log.Error().Msgf("%s: user must be 3-100 letter/digits, password - 6-100 letters", e.Message())
 		case codes.NotFound:

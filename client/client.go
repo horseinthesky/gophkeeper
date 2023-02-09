@@ -8,12 +8,12 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"gophkeeper/db/db"
 	"gophkeeper/pb"
 	"gophkeeper/token"
+	"gophkeeper/certs"
 )
 
 type Client struct {
@@ -39,7 +39,12 @@ func NewClient(cfg Config, logger zerolog.Logger) (*Client, error) {
 
 	queries := db.New(pool)
 
-	conn, err := grpc.Dial(cfg.Address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	creds, err := certs.LoadClientCreds()
+	if err != nil {
+		return nil, err
+	}
+
+	conn, err := grpc.Dial(cfg.Address, grpc.WithTransportCredentials(creds))
 	if err != nil {
 		return nil, err
 	}
