@@ -109,23 +109,11 @@ func (c *Client) storeSecretFromEntry(kind SecretKind, inputs []textinput.Model)
 	return dbSecret, nil
 }
 
-func (c *Client) loadSecretContentFromEntry(kind SecretKind, name string) (string, error) {
-	dbSecret, err := c.storage.GetSecret(
-		context.Background(),
-		db.GetSecretParams{
-			Owner: c.config.User,
-			Kind:  int32(kind),
-			Name:  name,
-		},
-	)
-	if err != nil {
-		return "", nil
-	}
-
-	switch kind {
+func (c *Client) loadSecretContentFromEntry(secret db.Secret) (string, error) {
+	switch SecretKind(secret.Kind) {
 	case SecretCreds:
 		var secretPayload CredsPayload
-		err := json.Unmarshal(dbSecret.Value, &secretPayload)
+		err := json.Unmarshal(secret.Value, &secretPayload)
 		if err != nil {
 			return "", err
 		}
@@ -138,16 +126,16 @@ func (c *Client) loadSecretContentFromEntry(kind SecretKind, name string) (strin
  Password: %s
  Notes: %s
 `,
-			dbSecret.Name,
-			dbSecret.Created.Time,
-			dbSecret.Modified.Time,
+			secret.Name,
+			secret.Created.Time,
+			secret.Modified.Time,
 			secretPayload.Login,
 			secretPayload.Password,
 			secretPayload.Notes,
 		), nil
 	case SecretText:
 		var secretPayload TextPayload
-		err := json.Unmarshal(dbSecret.Value, &secretPayload)
+		err := json.Unmarshal(secret.Value, &secretPayload)
 		if err != nil {
 			return "", err
 		}
@@ -159,15 +147,15 @@ func (c *Client) loadSecretContentFromEntry(kind SecretKind, name string) (strin
  Text: %s
  Notes: %s
 `,
-			dbSecret.Name,
-			dbSecret.Created.Time,
-			dbSecret.Modified.Time,
+			secret.Name,
+			secret.Created.Time,
+			secret.Modified.Time,
 			secretPayload.Text,
 			secretPayload.Notes,
 		), nil
 	case SecretBytes:
 		var secretPayload BytesPayload
-		err := json.Unmarshal(dbSecret.Value, &secretPayload)
+		err := json.Unmarshal(secret.Value, &secretPayload)
 		if err != nil {
 			return "", err
 		}
@@ -179,15 +167,15 @@ func (c *Client) loadSecretContentFromEntry(kind SecretKind, name string) (strin
  Filename: %s
  Notes: %s
 `,
-			dbSecret.Name,
-			dbSecret.Created.Time,
-			dbSecret.Modified.Time,
+			secret.Name,
+			secret.Created.Time,
+			secret.Modified.Time,
 			secretPayload.Filename,
 			secretPayload.Notes,
 		), nil
 	case SecretCard:
 		var secretPayload CardPayload
-		err := json.Unmarshal(dbSecret.Value, &secretPayload)
+		err := json.Unmarshal(secret.Value, &secretPayload)
 		if err != nil {
 			return "", err
 		}
@@ -203,9 +191,9 @@ func (c *Client) loadSecretContentFromEntry(kind SecretKind, name string) (strin
  PIN: %s
  Notes: %s
 `,
-			dbSecret.Name,
-			dbSecret.Created.Time,
-			dbSecret.Modified.Time,
+			secret.Name,
+			secret.Created.Time,
+			secret.Modified.Time,
 			secretPayload.Number,
 			secretPayload.Owner,
 			secretPayload.EXP,
@@ -215,5 +203,5 @@ func (c *Client) loadSecretContentFromEntry(kind SecretKind, name string) (strin
 		), nil
 	}
 
-	return "", fmt.Errorf("unsupported secret kind: %s", secretKindToString[kind])
+	return "", fmt.Errorf("unsupported secret kind: %s", secretKindToString[SecretKind(secret.Kind)])
 }

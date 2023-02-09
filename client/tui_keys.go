@@ -7,6 +7,7 @@ type action struct {
 	Enter  key.Binding
 	Rename key.Binding
 	Delete key.Binding
+	Save   key.Binding
 	Back   key.Binding
 	Quit   key.Binding
 }
@@ -28,6 +29,10 @@ var keyMap = action{
 	Delete: key.NewBinding(
 		key.WithKeys("d"),
 		key.WithHelp("d", "delete"),
+	),
+	Save: key.NewBinding(
+		key.WithKeys("s"),
+		key.WithHelp("s", "save"),
 	),
 	Back: key.NewBinding(
 		key.WithKeys("esc"),

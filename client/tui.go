@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -45,14 +46,19 @@ const (
 )
 
 type model struct {
-	mode         mode
-	focusIndex   int
-	newEntryKind SecretKind
-	goph         *Client
-	list         list.Model
-	choices      list.Model
-	inputs       []textinput.Model
-	viewport     viewport.Model
+	mode mode
+	goph *Client
+
+	list    list.Model // Main menu
+	choices list.Model // New secret kinds menu
+
+	inputs     []textinput.Model // New secret params input
+	focusIndex int               // Index for new secret param
+
+	newEntryKind       SecretKind      // Selected secret kind for new secret
+	viewport           viewport.Model  // Display secret info
+	secretBytesContent []byte          // Content of bytes secret - file content
+	input              textinput.Model // File path to save bytes secret content on disk
 }
 
 func (m model) Init() tea.Cmd {
@@ -60,6 +66,10 @@ func (m model) Init() tea.Cmd {
 }
 
 func (m model) View() string {
+	if m.input.Focused() {
+		return shellStyle.Render(m.input.View())
+	}
+
 	if m.mode == choice {
 		return shellStyle.Render(m.choices.View())
 	}
@@ -99,6 +109,30 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		h, v := shellStyle.GetFrameSize()
 		m.list.SetSize(msg.Width-h, msg.Height-v)
 	case tea.KeyMsg:
+		if m.input.Focused() {
+			switch {
+			case key.Matches(msg, keyMap.Enter):
+				err := saveOnDisk(m.input.Value(), m.secretBytesContent)
+				if err != nil {
+					m.input.SetValue("")
+					m.input.Placeholder = fmt.Sprintf("invalid file path: %s", err.Error())
+					return m, nil
+				}
+
+				m.input.SetValue("")
+				m.input.Blur()
+			case key.Matches(msg, keyMap.Back):
+				m.input.SetValue("")
+				m.input.Blur()
+			}
+
+			// only log keypresses for the input field when it's focused
+			m.input, cmd = m.input.Update(msg)
+			cmds = append(cmds, cmd)
+
+			return m, tea.Batch(cmds...)
+		}
+
 		switch m.mode {
 		case choice:
 			switch {
@@ -178,6 +212,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case key.Matches(msg, keyMap.Back):
 				m.mode = main
 				return m, nil
+			case key.Matches(msg, keyMap.Save):
+				// if m.newEntryKind == SecretBytes {
+				m.input.Focus()
+				return m, nil
+				// }
 			}
 		default:
 			// Don't match any of the keys below if we're actively filtering.
@@ -190,7 +229,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				i, _ := m.list.SelectedItem().(item)
 
 				m.viewport = viewport.New(70, 10)
-				secretContent, err := m.goph.loadSecretContentFromEntry(stringToSecretKind[i.kind], i.name)
+
+				dbSecret, err := m.goph.GetSecret(stringToSecretKind[i.kind], i.name)
+				if dbSecret.Kind == int32(SecretBytes) {
+					var payload BytesPayload
+					json.Unmarshal(dbSecret.Value, &payload)
+					m.secretBytesContent = payload.Bytes
+				}
+
+				secretContent, err := m.goph.loadSecretContentFromEntry(dbSecret)
 				if err != nil {
 					m.viewport.SetContent(err.Error())
 				} else {
@@ -244,10 +291,9 @@ func (m *model) updateInputs(msg tea.Msg) tea.Cmd {
 func (c *Client) runShell(ctx context.Context) {
 	// Init input model
 	input := textinput.New()
-	input.Prompt = "enter new secret> "
-	input.Placeholder = "my supersecret secret"
-	input.CharLimit = 250
-	input.Width = 50
+	input.Prompt = "$ "
+	input.Placeholder = "filepath save to"
+	input.CharLimit = 50
 
 	// Init list model
 	items := []list.Item{}
@@ -282,6 +328,7 @@ func (c *Client) runShell(ctx context.Context) {
 		goph:    c,
 		list:    list.New(items, list.NewDefaultDelegate(), 0, 0),
 		choices: list.New(choices, list.NewDefaultDelegate(), 30, 30),
+		input:   input,
 	}
 	m.list.Title = "My Secrets"
 	m.list.AdditionalShortHelpKeys = func() []key.Binding {

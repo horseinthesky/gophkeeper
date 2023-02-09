@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"os"
 	"time"
 
 	"gophkeeper/db/db"
@@ -34,6 +35,17 @@ var stringToSecretKind = map[string]SecretKind{
 
 func (k SecretKind) String() string {
 	return secretKindToString[k]
+}
+
+func (c *Client) GetSecret(kind SecretKind, name string) (db.Secret, error) {
+	return  c.storage.GetSecret(
+		context.Background(),
+		db.GetSecretParams{
+			Owner: c.config.User,
+			Kind:  int32(kind),
+			Name:  name,
+		},
+	)
 }
 
 func (c *Client) SetSecret(ctx context.Context, kind SecretKind, name string, payload []byte) (db.Secret, error) {
@@ -108,4 +120,16 @@ func (c *Client) DeleteSecret(ctx context.Context, kind SecretKind, name string)
 			Name:  name,
 		},
 	)
+}
+
+func saveOnDisk(filename string, content []byte) error {
+	file, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE, 0666)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	_, err = file.Write(content)
+
+	return nil
 }
