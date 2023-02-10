@@ -55,7 +55,7 @@ type model struct {
 	inputs     []textinput.Model // New secret params input
 	focusIndex int               // Index for new secret param
 
-	newEntryKind       SecretKind      // Selected secret kind for new secret
+	selectedSecretKind       SecretKind      // Selected secret kind for new secret
 	viewport           viewport.Model  // Display secret info
 	secretBytesContent []byte          // Content of bytes secret - file content
 	input              textinput.Model // File path to save bytes secret content on disk
@@ -143,7 +143,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				i, _ := m.choices.SelectedItem().(choiceItem)
 				kind := stringToSecretKind[string(i)]
 				m.inputs = entryMap[kind]()
-				m.newEntryKind = kind
+				m.selectedSecretKind = kind
 				m.mode = entry
 				return m, nil
 			default:
@@ -163,14 +163,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				// Did the user press enter while the submit button was focused?
 				// If so, exit.
 				if s == "enter" && m.focusIndex == len(m.inputs) {
-					dbSecret, err := m.goph.storeSecretFromEntry(m.newEntryKind, m.inputs)
+					dbSecret, err := m.goph.storeSecretFromEntry(m.selectedSecretKind, m.inputs)
 					if err != nil {
 						m.goph.log.Error().Err(err).Msgf("failed to save secret %s", m.inputs[0].Value())
 						return m, nil
 					}
 
 					m.mode = main
-					insCmd := m.list.InsertItem(0, item{name: dbSecret.Name, kind: secretKindToString[m.newEntryKind]})
+					insCmd := m.list.InsertItem(0, item{name: dbSecret.Name, kind: secretKindToString[m.selectedSecretKind]})
 					statusCmd := m.list.NewStatusMessage(statusMessageStyle("Added " + m.inputs[0].Value()))
 					return m, tea.Batch(insCmd, statusCmd)
 				}
@@ -213,10 +213,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.mode = main
 				return m, nil
 			case key.Matches(msg, keyMap.Save):
-				// if m.newEntryKind == SecretBytes {
-				m.input.Focus()
-				return m, nil
-				// }
+				m.goph.log.Info().Msg(secretKindToString[m.selectedSecretKind])
+				if m.selectedSecretKind == SecretBytes {
+					m.input.Focus()
+					return m, nil
+				}
 			}
 		default:
 			// Don't match any of the keys below if we're actively filtering.
@@ -243,6 +244,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					m.viewport.SetContent(secretContent)
 				}
+				m.selectedSecretKind = SecretKind(dbSecret.Kind)
 				m.mode = show
 				return m, nil
 			case key.Matches(msg, keyMap.Create):

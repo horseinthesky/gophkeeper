@@ -166,6 +166,8 @@ func (c *Client) loadSecretContentFromEntry(secret db.Secret) (string, error) {
 
  Filename: %s
  Notes: %s
+
+ Press "s" to save the file to your local drive.
 `,
 			secret.Name,
 			secret.Created.Time,
