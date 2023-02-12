@@ -8,7 +8,6 @@ import (
 
 const (
 	symmetricKey         = "cuzyouwillneverknowthissecretkey"
-	defaultTokenDuration = time.Duration(time.Hour * 24 * 30)
 )
 
 type PasetoMaker struct {
@@ -23,8 +22,8 @@ func NewPasetoMaker() PasetoMaker {
 	}
 }
 
-func (maker *PasetoMaker) CreateToken(username string) (string, error) {
-	payload := NewPayload(username, defaultTokenDuration)
+func (maker *PasetoMaker) CreateToken(username string, duration time.Duration) (string, error) {
+	payload := NewPayload(username, duration)
 
 	token, err := maker.paseto.Encrypt(maker.symmetricKey, payload, nil)
 	return token, err

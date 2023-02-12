@@ -1,3 +1,5 @@
+SHELL=/usr/bin/env bash
+
 PASS=mysecretpassword
 
 SDB_CONTAINER_NAME=server-postgres
@@ -63,5 +65,9 @@ cert:
 build:
 	go build -ldflags "-X 'main.buildTime=$(date +'%Y/%m/%d %H:%M:%S')'" -o gc ./client.go
 	go build -o gs ./server.go
+
+test:
+	go test ./{token,client}/... -coverprofile=coverage.out
+	@go tool cover -html=coverage.out
 
 .PHONY: init dev mkdb es ec rmdb refreshdb migrateup migratedown sqlc proto cert build

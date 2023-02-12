@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/lib/pq"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
@@ -14,6 +15,8 @@ import (
 	"gophkeeper/server/crypto"
 	"gophkeeper/server/validation"
 )
+
+const defaultTokenDuration = time.Duration(time.Hour * 24 * 30)
 
 func (s *Server) Register(ctx context.Context, in *pb.User) (*pb.Token, error) {
 	violations := validateUser(in)
@@ -45,6 +48,7 @@ func (s *Server) Register(ctx context.Context, in *pb.User) (*pb.Token, error) {
 
 	token, err := s.tm.CreateToken(
 		in.Name,
+		defaultTokenDuration,
 	)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to create access token")
@@ -79,6 +83,7 @@ func (s *Server) Login(ctx context.Context, in *pb.User) (*pb.Token, error) {
 
 	token, err := s.tm.CreateToken(
 		dbUser.Name,
+		defaultTokenDuration,
 	)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to create access token")
