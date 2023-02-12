@@ -2,7 +2,7 @@
 
 **gophkeeper** is a PoC secret storage service.
 
-![main](https://github.com/horseinthesky/gophkeeper/blob/diploma/media/main.jpg)
+![main](https://github.com/horseinthesky/gophkeeper/blob/diploma/media/main.png)
 
 ## ✨ Features
 
@@ -15,15 +15,15 @@
 
 Select a secret kind
 
-![new](https://github.com/horseinthesky/gophkeeper/blob/diploma/media/new.jpg)
+![new](https://github.com/horseinthesky/gophkeeper/blob/diploma/media/new.png)
 
 Fill new secret form
 
-![entry](https://github.com/horseinthesky/gophkeeper/blob/diploma/media/entry.jpg)
+![entry](https://github.com/horseinthesky/gophkeeper/blob/diploma/media/entry.png)
 
 Display your secret info
 
-![show](https://github.com/horseinthesky/gophkeeper/blob/diploma/media/show.jpg)
+![show](https://github.com/horseinthesky/gophkeeper/blob/diploma/media/show.png)
 
 ### Supported secret kinds
 
