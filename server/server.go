@@ -20,7 +20,7 @@ import (
 type Server struct {
 	*pb.UnimplementedGophKeeperServer
 	config  Config
-	storage *db.Queries
+	storage db.Querier
 	tm      token.PasetoMaker
 	log     zerolog.Logger
 }

@@ -18,6 +18,7 @@ init:
 dev:
 	go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 	go install github.com/kyleconroy/sqlc/cmd/sqlc@latest
+	go install github.com/golang/mock/mockgen@latest
 
 mkdb:
 	docker run --name $(SDB_CONTAINER_NAME) -p $(SDB_PORT):5432 -e POSTGRES_PASSWORD=$(PASS) -d postgres
@@ -49,6 +50,10 @@ migratedown:
 sqlc:
 	sqlc generate
 
+mock:
+	@rm db/mock/*
+	mockgen -package mock -destination db/mock/querier.go gophkeeper/db/db Querier
+
 proto:
 	@rm -f pb/*.go
 	protoc \
@@ -67,7 +72,7 @@ build:
 	go build -o gs ./server.go
 
 test:
-	go test ./{token,client}/... -coverprofile=coverage.out
+	go test ./{token,client,server,converter}/... -coverprofile=coverage.out
 	@go tool cover -html=coverage.out
 
-.PHONY: init dev mkdb es ec rmdb refreshdb migrateup migratedown sqlc proto cert build
+.PHONY: init dev mkdb es ec rmdb refreshdb migrateup migratedown sqlc mock proto cert build test

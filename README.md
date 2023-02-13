@@ -59,6 +59,7 @@ make build
 For development you will need additional tools:
 - [sqlc](https://github.com/kyleconroy/sqlc)
 - [go mirgate](https://github.com/golang-migrate/migrate)
+- [gomock](https://github.com/golang/mock)
 
 Install them with
 

@@ -18,7 +18,7 @@ import (
 
 type Client struct {
 	config    Config
-	storage   *db.Queries
+	storage   db.Querier
 	tm        token.PasetoMaker
 	g         pb.GophKeeperClient
 	log       zerolog.Logger

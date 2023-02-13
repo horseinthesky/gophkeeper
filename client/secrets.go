@@ -38,7 +38,7 @@ func (k SecretKind) String() string {
 }
 
 func (c *Client) GetSecret(kind SecretKind, name string) (db.Secret, error) {
-	return  c.storage.GetSecret(
+	return c.storage.GetSecret(
 		context.Background(),
 		db.GetSecretParams{
 			Owner: c.config.User,
@@ -48,9 +48,9 @@ func (c *Client) GetSecret(kind SecretKind, name string) (db.Secret, error) {
 	)
 }
 
-func (c *Client) SetSecret(ctx context.Context, kind SecretKind, name string, payload []byte) (db.Secret, error) {
+func (c *Client) SetSecret(kind SecretKind, name string, payload []byte) (db.Secret, error) {
 	localSecret, err := c.storage.GetSecret(
-		ctx,
+		context.Background(),
 		db.GetSecretParams{
 			Owner: c.config.User,
 			Kind:  int32(kind),
@@ -59,7 +59,7 @@ func (c *Client) SetSecret(ctx context.Context, kind SecretKind, name string, pa
 	)
 	if errors.Is(err, sql.ErrNoRows) {
 		newSecret, err := c.storage.CreateSecret(
-			ctx,
+			context.Background(),
 			db.CreateSecretParams{
 				Owner: c.config.User,
 				Kind:  int32(kind),
@@ -89,7 +89,7 @@ func (c *Client) SetSecret(ctx context.Context, kind SecretKind, name string, pa
 	}
 
 	updateSecret, err := c.storage.UpdateSecret(
-		ctx,
+		context.Background(),
 		db.UpdateSecretParams{
 			Owner: c.config.User,
 			Kind:  int32(kind),

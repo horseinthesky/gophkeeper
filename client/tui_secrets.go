@@ -1,7 +1,6 @@
 package client
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"gophkeeper/db/db"
@@ -101,7 +100,7 @@ func (c *Client) storeSecretFromEntry(kind SecretKind, inputs []textinput.Model)
 		return db.Secret{}, fmt.Errorf("unsupported secret kind: %s", secretKindToString[kind])
 	}
 
-	dbSecret, err := c.SetSecret(context.Background(), kind, secretName, payloadBytes)
+	dbSecret, err := c.SetSecret(kind, secretName, payloadBytes)
 	if err != nil {
 		return db.Secret{}, err
 	}
