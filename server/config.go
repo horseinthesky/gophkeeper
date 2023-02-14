@@ -23,6 +23,7 @@ type Config struct {
 }
 
 func LoadConfig(configFilePath string) (Config, error) {
+	viper.AutomaticEnv()
 	viper.SetEnvPrefix("GOPHKEEPER")
 
 	viper.SetDefault("ENV", defaultEnvironment)
@@ -30,16 +31,17 @@ func LoadConfig(configFilePath string) (Config, error) {
 	viper.SetDefault("DSN", defaultDSN)
 	viper.SetDefault("CLEAN", defaultClean)
 
-	viper.SetConfigFile(configFilePath)
-	viper.AutomaticEnv()
+	if configFilePath != "" {
+		viper.SetConfigFile(configFilePath)
 
-	err := viper.ReadInConfig()
-	if err != nil {
-		return Config{}, fmt.Errorf("%w, please provide server config file path", err)
+		err := viper.ReadInConfig()
+		if err != nil {
+			return Config{}, fmt.Errorf("%w, please provide server config file path", err)
+		}
 	}
 
 	config := Config{}
-	err = viper.Unmarshal(&config)
+	err := viper.Unmarshal(&config)
 
 	if config.Environment != "prod" && config.Environment != "dev" {
 		return Config{}, fmt.Errorf("environment can only be dev/prod(default)")

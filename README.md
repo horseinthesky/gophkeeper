@@ -36,7 +36,7 @@ Display your secret info
 
 - Git
 - Docker
-- Go  >= 1.19
+- Go >= 1.19
 
 ## 📦 Installation
 
@@ -54,9 +54,43 @@ Then build packages
 make build
 ```
 
-### 🔨 Dev
+## 🚀 Usage
+
+### Server
+
+The Server supports the following settings:
+
+- `env` - environment determines what the logging level and log format will be
+  - `dev` (**default**) - plain text colored `INFO` level logs
+  - `prod` - JSON `WARN` level logs
+- `address` - `address:port` to listen on (defaults to `localhost:8080`)
+- `dsn` - PostgreSQL database DSN
+- `clean` - database cleanup time interval (defaults to `5s`)
+
+All can set all the settings in the config file (`-c` flag) or via env vars (overrides config file values) with the same names prefixed with `GOPHKEEPER_` (e.g. `GOPHKEEPER_ENV`).
+
+### Client
+
+Client settings are the following:
+
+- `user` (**mandatory**) - your username
+- `password` (**mandatory**) - your password
+- `env` - environment determines what the logging level and log format will be
+  - `dev` (**default**) - plain text colored `INFO` level logs
+  - `prod` - JSON `WARN` level logs
+- `address` - `address:port` of the server to connect to (defaults to`localhost:8080`)
+- `dsn` - PostgreSQL database DSN
+- `sync` - secret synchronization time interval (defaults to `15s`)
+- `clean` - database cleanup time interval (defaults to `5s`)
+
+All can set all the settings in the config file (`-c` flag) or via env vars (overrides config file values) with the same names prefixed with `GOPHKEEPER_` (e.g. `GOPHKEEPER_ENV`).
+
+The client will **automatically** register/login (if you are an existing user) with provided credentials.
+
+## 🔨 Dev
 
 For development you will need additional tools:
+
 - [sqlc](https://github.com/kyleconroy/sqlc)
 - [go mirgate](https://github.com/golang-migrate/migrate)
 - [gomock](https://github.com/golang/mock)

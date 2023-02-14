@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"gophkeeper/logger"
 	"gophkeeper/server"
 	"os"
@@ -10,14 +11,16 @@ import (
 )
 
 func main() {
-	configPath := "server_config.yml"
+	configFilePath := flag.String("c", "", "Server config file path")
+	flag.Parse()
 
-	config, err := server.LoadConfig(configPath)
+	config, err := server.LoadConfig(*configFilePath)
 	if err != nil {
 		panic(err)
 	}
 
 	logger := logger.New(config.Environment)
+	logger.Info().Msg(config.Environment)
 
 	server, err := server.NewServer(config, logger)
 	if err != nil {

@@ -14,6 +14,7 @@ var (
 
 func main() {
 	v := flag.Bool("v", false, "Gophkeeper version")
+	configFilePath := flag.String("c", "", "Client config file path")
 	flag.Parse()
 
 	if *v {
@@ -21,9 +22,7 @@ func main() {
 		return
 	}
 
-	configPath := "client_config.yml"
-
-	config, err := client.LoadConfig(configPath)
+	config, err := client.LoadConfig(*configFilePath)
 	if err != nil {
 		panic(err)
 	}
