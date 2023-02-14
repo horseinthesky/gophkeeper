@@ -22,7 +22,7 @@ type Config struct {
 	Clean       time.Duration `mapstructure:"CLEAN"`
 }
 
-func LoadConfig(path string) (Config, error) {
+func LoadConfig(configFilePath string) (Config, error) {
 	viper.SetEnvPrefix("GOPHKEEPER")
 
 	viper.SetDefault("ENV", defaultEnvironment)
@@ -30,12 +30,12 @@ func LoadConfig(path string) (Config, error) {
 	viper.SetDefault("DSN", defaultDSN)
 	viper.SetDefault("CLEAN", defaultClean)
 
-	viper.SetConfigFile(path)
+	viper.SetConfigFile(configFilePath)
 	viper.AutomaticEnv()
 
 	err := viper.ReadInConfig()
 	if err != nil {
-		return Config{}, err
+		return Config{}, fmt.Errorf("%w, please provide server config file path", err)
 	}
 
 	config := Config{}

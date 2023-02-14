@@ -12,10 +12,10 @@ import (
 	"gophkeeper/pb"
 )
 
-func runTestServer(server *Server) (pb.GophKeeperClient, func()) {
+func runTestServer(server *Server, opts ...grpc.ServerOption) (pb.GophKeeperClient, func()) {
 	lis := bufconn.Listen(1024)
 
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(opts...)
 	pb.RegisterGophKeeperServer(grpcServer, server)
 	go func() {
 		if err := grpcServer.Serve(lis); err != nil {

@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	symmetricKey         = "cuzyouwillneverknowthissecretkey"
+	symmetricKey = "cuzyouwillneverknowthissecretkey"
 )
 
 type PasetoMaker struct {
