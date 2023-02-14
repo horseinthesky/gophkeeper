@@ -5,16 +5,17 @@ import (
 	"database/sql"
 	"log"
 	"net"
+	"sync"
 
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
+	"gophkeeper/certs"
 	"gophkeeper/db/db"
 	"gophkeeper/pb"
 	"gophkeeper/token"
-	"gophkeeper/certs"
 )
 
 type Server struct {
@@ -23,6 +24,7 @@ type Server struct {
 	storage db.Querier
 	tm      token.PasetoMaker
 	log     zerolog.Logger
+	wg      sync.WaitGroup
 }
 
 func NewServer(config Config, logger zerolog.Logger) (*Server, error) {
@@ -44,17 +46,22 @@ func NewServer(config Config, logger zerolog.Logger) (*Server, error) {
 		queries,
 		token.NewPasetoMaker(),
 		logger,
+		sync.WaitGroup{},
 	}, nil
 }
 
-func (s *Server) Run() {
+func (s *Server) Run(ctx context.Context) {
 	listener, err := net.Listen("tcp", s.config.Address)
 	if err != nil {
 		s.log.Error().Err(err).Msg("failed to open socket")
 		return
 	}
 
-	go s.cleanJob(context.Background())
+	s.wg.Add(1)
+	go func() {
+		defer s.wg.Done()
+		s.cleanJob(ctx)
+	}()
 
 	creds, err := certs.LoadServerCreds()
 	if err != nil {
@@ -76,4 +83,11 @@ func (s *Server) Run() {
 	s.log.Info().Msg("finished to serve gRPC requests")
 
 	grpcServer.GracefulStop()
+}
+
+func (s *Server) Stop() {
+	s.log.Info().Msg("shutting down...")
+
+	s.wg.Wait()
+	s.log.Info().Msg("successfully shut down")
 }

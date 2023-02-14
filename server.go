@@ -1,8 +1,12 @@
 package main
 
 import (
+	"context"
 	"gophkeeper/logger"
 	"gophkeeper/server"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
@@ -21,5 +25,15 @@ func main() {
 		return
 	}
 
-	server.Run()
+	ctx, cancel := context.WithCancel(context.Background())
+	go server.Run(ctx)
+
+	term := make(chan os.Signal, 1)
+	signal.Notify(term, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
+
+	sig := <-term
+	logger.Info().Msgf("signal received: %v; terminating...\n", sig)
+
+	cancel()
+	server.Stop()
 }

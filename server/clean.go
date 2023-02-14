@@ -13,7 +13,7 @@ func (s *Server) cleanJob(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
-			s.log.Info().Msg("finished periodic cleaning db")
+			s.log.Info().Msg("finished periodic db cleaning")
 			return
 		case <-ticker.C:
 			s.clean(ctx)
