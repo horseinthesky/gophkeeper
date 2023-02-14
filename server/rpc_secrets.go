@@ -61,6 +61,9 @@ func (s *Server) SetSecrets(ctx context.Context, in *pb.Secrets) (*emptypb.Empty
 			)
 			continue
 		}
+		if errors.Is(err, sql.ErrNoRows) && remoteSecret.Deleted.Bool {
+			continue
+		}
 
 		if remoteSecret.Deleted.Bool {
 			err := s.storage.MarkSecretDeleted(
