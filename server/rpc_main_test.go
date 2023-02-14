@@ -13,7 +13,7 @@ import (
 )
 
 func runTestServer(server *Server) (pb.GophKeeperClient, func()) {
-	lis := bufconn.Listen(1)
+	lis := bufconn.Listen(1024)
 
 	grpcServer := grpc.NewServer()
 	pb.RegisterGophKeeperServer(grpcServer, server)
