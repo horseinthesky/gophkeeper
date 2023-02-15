@@ -55,7 +55,7 @@ type model struct {
 	inputs     []textinput.Model // New secret params input
 	focusIndex int               // Index for new secret param
 
-	selectedSecretKind       SecretKind      // Selected secret kind for new secret
+	selectedSecretKind SecretKind      // Selected secret kind for new secret
 	viewport           viewport.Model  // Display secret info
 	secretBytesContent []byte          // Content of bytes secret - file content
 	input              textinput.Model // File path to save bytes secret content on disk
@@ -108,6 +108,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		h, v := shellStyle.GetFrameSize()
 		m.list.SetSize(msg.Width-h, msg.Height-v)
+		m.choices.SetSize(msg.Width-h, msg.Height-v)
 	case tea.KeyMsg:
 		if m.input.Focused() {
 			switch {
@@ -329,7 +330,7 @@ func (c *Client) runShell(ctx context.Context) {
 	m := model{
 		goph:    c,
 		list:    list.New(items, list.NewDefaultDelegate(), 0, 0),
-		choices: list.New(choices, list.NewDefaultDelegate(), 30, 30),
+		choices: list.New(choices, list.NewDefaultDelegate(), 0, 0),
 		input:   input,
 	}
 	m.list.Title = "My Secrets"
