@@ -61,8 +61,8 @@ make build
 The Server supports the following settings:
 
 - `env` - environment determines what the logging level and log format will be
-  - `dev` (**default**) - plain text colored `INFO` level logs
-  - `prod` - JSON `WARN` level logs
+  - `dev` - plain text colored `INFO` level logs
+  - `prod` (**default**) - JSON `WARN` level logs
 - `address` - `address:port` to listen on (defaults to `localhost:8080`)
 - `dsn` - PostgreSQL database DSN
 - `clean` - database cleanup time interval (defaults to `5s`)
@@ -76,8 +76,8 @@ Client settings are the following:
 - `user` (**mandatory**) - your username
 - `password` (**mandatory**) - your password
 - `env` - environment determines what the logging level and log format will be
-  - `dev` (**default**) - plain text colored `INFO` level logs
-  - `prod` - JSON `WARN` level logs
+  - `dev` - plain text colored `INFO` level logs
+  - `prod` (**default**) - JSON `WARN` level logs
 - `address` - `address:port` of the server to connect to (defaults to`localhost:8080`)
 - `dsn` - PostgreSQL database DSN
 - `sync` - secret synchronization time interval (defaults to `15s`)
