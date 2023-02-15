@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"time"
 
@@ -13,64 +14,54 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-const (
-	tokenCachedDir  = "/.cache/gophkeeper/"
-	tokenCachedFile = "token"
+var (
+	tokenCachedDir      = os.Getenv("HOME") + "/.cache/gophkeeper/"
+	tokenCachedFileName = "token"
 )
 
-func (c *Client) loadCachedToken() {
-	home := os.Getenv("HOME")
-
-	tokenBytes, err := os.ReadFile(home + tokenCachedDir + tokenCachedFile)
+func (c *Client) loadCachedToken(filepath string) error {
+	tokenBytes, err := os.ReadFile(filepath)
 	if err != nil {
-		c.log.Error().Err(err).Msg("failed to load cached token")
-		return
+		return err
 	}
-
-	c.log.Info().Msg("successfully loaded cached token")
 
 	payload, err := c.tm.VerifyToken(string(tokenBytes))
 	if err != nil {
 		if errors.Is(err, token.ErrInvalidToken) {
-			c.log.Error().Err(err).Msg("cached token is not valid")
-			return
+			return err
 		}
 		if errors.Is(err, token.ErrExpiredToken) {
-			c.log.Error().Err(err).Msg("cached token has expired")
-			return
+			return err
 		}
 	}
 
 	if c.config.User != payload.Username {
-		c.log.Error().Msgf("cached token does not belong to you, %s", c.config.User)
-		return
+		return fmt.Errorf("config user name differs from token user name")
 	}
 
 	c.token = string(tokenBytes)
+
+	return nil
 }
 
-func (c *Client) saveToken(token string) {
-	home := os.Getenv("HOME")
-
-	err := os.MkdirAll(home+tokenCachedDir, 0700)
+func (c *Client) saveToken(dir, filename, token string) error {
+	err := os.MkdirAll(dir, 0700)
 	if err != nil {
-		c.log.Error().Err(err).Msgf("field to create cache dir")
-		return
+		return err
 	}
 
-	file, err := os.OpenFile(home+tokenCachedDir+tokenCachedFile, os.O_WRONLY|os.O_CREATE, 0666)
+	file, err := os.OpenFile(dir+filename, os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
-		c.log.Error().Err(err).Msgf("field to open/create token cache file")
-		return
+		return err
 	}
 	defer file.Close()
 
 	_, err = file.Write([]byte(token))
 	if err != nil {
-		c.log.Error().Err(err).Msgf("field to write token to cache file")
+		return err
 	}
 
-	c.log.Info().Msgf("successfully saved token to cache file")
+	return nil
 }
 
 func (c *Client) login(ctx context.Context) {
@@ -115,7 +106,7 @@ func (c *Client) login(ctx context.Context) {
 	c.token = tokenResponse.Value
 	c.log.Info().Msgf("successfully logged in with user '%s'", c.config.User)
 
-	c.saveToken(tokenResponse.Value)
+	c.saveToken(tokenCachedDir, tokenCachedFileName, tokenResponse.Value)
 }
 
 func (c *Client) loginJob(ctx context.Context) {
@@ -154,7 +145,13 @@ func (c *Client) register(ctx context.Context) {
 		return
 	}
 
-	c.saveToken(tokenResponse.Value)
+	err = c.saveToken(tokenCachedDir, tokenCachedFileName, tokenResponse.Value)
+	if err != nil {
+		c.log.Error().Err(err).Msgf("failed to save token")
+	} else {
+		c.log.Info().Msgf("successfully saved token to cache file")
+	}
+
 	c.token = tokenResponse.Value
 
 	c.log.Info().Msgf("successfully registerd with user '%s'", c.config.User)

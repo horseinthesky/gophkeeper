@@ -111,9 +111,9 @@ func (c *Client) SetSecret(kind SecretKind, name string, payload []byte) (db.Sec
 	return updateSecret, nil
 }
 
-func (c *Client) DeleteSecret(ctx context.Context, kind SecretKind, name string) error {
+func (c *Client) DeleteSecret(kind SecretKind, name string) error {
 	return c.storage.MarkSecretDeleted(
-		ctx,
+		context.Background(),
 		db.MarkSecretDeletedParams{
 			Owner: c.config.User,
 			Kind:  int32(kind),

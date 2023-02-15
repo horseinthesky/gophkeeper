@@ -10,10 +10,10 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 
+	"gophkeeper/certs"
 	"gophkeeper/db/db"
 	"gophkeeper/pb"
 	"gophkeeper/token"
-	"gophkeeper/certs"
 )
 
 type Client struct {
@@ -67,9 +67,16 @@ func (c *Client) Run() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 
-	c.loadCachedToken()
+	// Try to load token from cache
+	err := c.loadCachedToken(tokenCachedDir + tokenCachedFileName)
+	if err != nil {
+		c.log.Error().Err(err).Msg("failed to load token")
+	} else {
+		c.log.Info().Msg("successfully loaded cached token")
+	}
 
-	_, err := c.g.Ping(ctx, &emptypb.Empty{})
+	// Check server connection and run initial sync
+	_, err = c.g.Ping(ctx, &emptypb.Empty{})
 	if err != nil {
 		c.log.Warn().Msg("server unavailable...working offline")
 	} else {
@@ -84,18 +91,21 @@ func (c *Client) Run() {
 		}
 	}
 
+	// Run periodic login job to refresh token
 	c.workGroup.Add(1)
 	go func() {
 		defer c.workGroup.Done()
 		c.loginJob(ctx)
 	}()
 
+	// Run periodic sync job
 	c.workGroup.Add(1)
 	go func() {
 		defer c.workGroup.Done()
 		c.syncJob(ctx)
 	}()
 
+	// Run periodic DB clead job
 	c.workGroup.Add(1)
 	go func() {
 		defer c.workGroup.Done()

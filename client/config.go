@@ -35,6 +35,7 @@ func LoadConfig(path string) (Config, error) {
 	viper.SetDefault("DSN", defaultDSN)
 	viper.SetDefault("SYNC", defaultSync)
 	viper.SetDefault("CLEAN", defaultClean)
+	viper.SetDefault("PASSWORD", "")
 
 	if path != "" {
 		viper.SetConfigFile(path)

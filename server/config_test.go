@@ -8,11 +8,11 @@ import (
 )
 
 func TestLoadConfig(t *testing.T) {
-	os.Setenv("GOPHKEEPER_ENV", "prod")
+	os.Setenv("GOPHKEEPER_ENV", "dev")
 
 	config, err := LoadConfig("testdata/server_config.yml")
 	require.NoError(t, err)
 
-	require.Equal(t, config.Environment, "prod")
+	require.Equal(t, config.Environment, "dev")
 	require.Equal(t, config.Address, defaultAddress)
 }

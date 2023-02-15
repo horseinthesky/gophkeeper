@@ -264,7 +264,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					keyMap.Delete.SetEnabled(false)
 				}
 
-				m.goph.DeleteSecret(context.Background(), stringToSecretKind[i.kind], i.name)
+				m.goph.DeleteSecret(stringToSecretKind[i.kind], i.name)
 				statusCmd := m.list.NewStatusMessage(statusMessageStyle("Deleted " + i.Title()))
 				return m, tea.Batch(statusCmd)
 			}
