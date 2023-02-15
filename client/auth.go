@@ -7,11 +7,11 @@ import (
 	"os"
 	"time"
 
-	"gophkeeper/pb"
-	"gophkeeper/token"
-
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"gophkeeper/pb"
+	"gophkeeper/token"
 )
 
 var (

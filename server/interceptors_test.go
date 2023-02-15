@@ -2,11 +2,6 @@ package server
 
 import (
 	"context"
-	"gophkeeper/db/db"
-	"gophkeeper/db/mock"
-	"gophkeeper/pb"
-	"gophkeeper/random"
-	"gophkeeper/token"
 	"testing"
 	"time"
 
@@ -16,6 +11,12 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+
+	"gophkeeper/db/db"
+	"gophkeeper/db/mock"
+	"gophkeeper/pb"
+	"gophkeeper/random"
+	"gophkeeper/token"
 )
 
 var testUsername3 = random.RandomOwner()

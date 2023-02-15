@@ -3,14 +3,14 @@ package converter
 import (
 	"database/sql"
 	"fmt"
-	"gophkeeper/db/db"
-	"gophkeeper/pb"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"gophkeeper/db/db"
+	"gophkeeper/pb"
 	"gophkeeper/random"
 )
 
@@ -91,13 +91,13 @@ func TestPBSecretToBBSecret(t *testing.T) {
 
 		t.Run(tt.name, func(t *testing.T) {
 			testPBSecret := &pb.Secret{
-				Owner: tt.owner,
-				Kind:  tt.kind,
-				Name:  tt.name,
-				Value: []byte(tt.value),
-				Created: timestamppb.New(now),
+				Owner:    tt.owner,
+				Kind:     tt.kind,
+				Name:     tt.name,
+				Value:    []byte(tt.value),
+				Created:  timestamppb.New(now),
 				Modified: timestamppb.New(now),
-				Deleted: tt.deleted,
+				Deleted:  tt.deleted,
 			}
 
 			dbSecret := PBSecretToDBSecret(testPBSecret)

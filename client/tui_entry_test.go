@@ -2,14 +2,15 @@ package client
 
 import (
 	"database/sql"
-	"gophkeeper/db/db"
-	"gophkeeper/db/mock"
 	"os"
 	"testing"
 
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
+
+	"gophkeeper/db/db"
+	"gophkeeper/db/mock"
 )
 
 func TestSecretsFromToEntry(t *testing.T) {

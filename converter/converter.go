@@ -2,10 +2,11 @@ package converter
 
 import (
 	"database/sql"
-	"gophkeeper/db/db"
-	"gophkeeper/pb"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"gophkeeper/db/db"
+	"gophkeeper/pb"
 )
 
 func DBSecretToPBSecret(secret db.Secret) *pb.Secret {
@@ -23,19 +24,19 @@ func DBSecretToPBSecret(secret db.Secret) *pb.Secret {
 func PBSecretToDBSecret(secret *pb.Secret) db.Secret {
 	return db.Secret{
 		Owner: secret.Owner,
-		Kind: secret.Kind,
-		Name: secret.Name,
+		Kind:  secret.Kind,
+		Name:  secret.Name,
 		Value: secret.Value,
 		Created: sql.NullTime{
-			Time: secret.Created.AsTime(),
+			Time:  secret.Created.AsTime(),
 			Valid: true,
 		},
 		Modified: sql.NullTime{
-			Time: secret.Modified.AsTime(),
+			Time:  secret.Modified.AsTime(),
 			Valid: true,
 		},
 		Deleted: sql.NullBool{
-			Bool: secret.Deleted,
+			Bool:  secret.Deleted,
 			Valid: true,
 		},
 	}

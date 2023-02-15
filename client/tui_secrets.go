@@ -3,10 +3,11 @@ package client
 import (
 	"encoding/json"
 	"fmt"
-	"gophkeeper/db/db"
 	"os"
 
 	"github.com/charmbracelet/bubbles/textinput"
+
+	"gophkeeper/db/db"
 )
 
 const fileSizeLimit = 500000 // bytes

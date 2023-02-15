@@ -3,11 +3,12 @@ package main
 import (
 	"context"
 	"flag"
-	"gophkeeper/logger"
-	"gophkeeper/server"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"gophkeeper/logger"
+	"gophkeeper/server"
 )
 
 func main() {
