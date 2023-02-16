@@ -75,6 +75,8 @@ Client settings are the following:
 
 - `user` (**mandatory**) - your username
 - `password` (**mandatory**) - your password
+- `encrypt` (default is `true`) - if gophkeeper should encrypt your secrets
+- `key` (**mandatory** 32 bytes master password if `encrypt` set to `true`) - this key will be used to encrypt your secrets
 - `env` - environment determines what the logging level and log format will be
   - `dev` - plain text colored `INFO` level logs
   - `prod` (**default**) - JSON `WARN` level logs
