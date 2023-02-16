@@ -7,6 +7,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/textinput"
 
+	"gophkeeper/crypto"
 	"gophkeeper/db/db"
 )
 
@@ -120,6 +121,13 @@ func (c *Client) storeSecretFromEntry(kind SecretKind, inputs []textinput.Model)
 	payloadBytes, err := payloader(inputs)
 	if err != nil {
 		return db.Secret{}, fmt.Errorf("failed to build secret '%s' payload: %w", secretName, err)
+	}
+
+	if c.config.Encrypt {
+		payloadBytes, err = crypto.Encrypt(payloadBytes, []byte(c.config.Key))
+		if err != nil {
+			return db.Secret{}, fmt.Errorf("failed to encrypt secret '%s' payload: %w", secretName, err)
+		}
 	}
 
 	dbSecret, err := c.SetSecret(kind, secretName, payloadBytes)

@@ -127,7 +127,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.input.Blur()
 			}
 
-			// only log keypresses for the input field when it's focused
+			// Only log keypresses for the input field when it's focused
 			m.input, cmd = m.input.Update(msg)
 			cmds = append(cmds, cmd)
 
@@ -230,15 +230,24 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case key.Matches(msg, keyMap.Enter):
 				i, _ := m.list.SelectedItem().(item)
 
-				m.viewport = viewport.New(70, 10)
+				m.viewport = viewport.New(200, 10)
 
+				// Load secret from DB. Decrypt if needed
 				dbSecret, err := m.goph.GetSecret(stringToSecretKind[i.kind], i.name)
+				if err != nil {
+					m.viewport.SetContent(err.Error())
+					m.mode = show
+					return m, nil
+				}
+
+				// Save content of bytes secret for the user decides to save to disk
 				if dbSecret.Kind == int32(SecretBytes) {
 					var payload BytesPayload
 					json.Unmarshal(dbSecret.Value, &payload)
 					m.secretBytesContent = payload.Bytes
 				}
 
+				// Load secret display data
 				secretContent, err := m.goph.loadSecretContentFromEntry(dbSecret)
 				if err != nil {
 					m.viewport.SetContent(err.Error())
@@ -251,8 +260,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case key.Matches(msg, keyMap.Create):
 				m.mode = choice
 				return m, nil
-				// m.input.Focus()
-				// cmd = textinput.Blink
 			case key.Matches(msg, keyMap.Delete):
 				i, ok := m.list.SelectedItem().(item)
 				if !ok {

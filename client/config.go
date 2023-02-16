@@ -8,6 +8,7 @@ import (
 )
 
 const (
+	defaultEncrypt     = true
 	defaultEnvironment = "prod"
 	defaultAddress     = "localhost:8080"
 	defaultDSN         = "postgresql://postgres:mysecretpassword@localhost:25432?sslmode=disable"
@@ -19,6 +20,8 @@ const (
 type Config struct {
 	User        string        `mapstructure:"USER"`
 	Password    string        `mapstructure:"PASSWORD"`
+	Encrypt     bool          `mapstructure:"ENCRYPT"`
+	Key         string        `mapstructure:"KEY"`
 	Environment string        `mapstructure:"ENV"`
 	Address     string        `mapstructure:"ADDRESS"`
 	DSN         string        `mapstructure:"DSN"`
@@ -30,6 +33,7 @@ func LoadConfig(path string) (Config, error) {
 	viper.AutomaticEnv()
 	viper.SetEnvPrefix("GOPHKEEPER")
 
+	viper.SetDefault("ENCRYPT", defaultEncrypt)
 	viper.SetDefault("ENV", defaultEnvironment)
 	viper.SetDefault("ADDRESS", defaultAddress)
 	viper.SetDefault("DSN", defaultDSN)
@@ -59,6 +63,15 @@ func LoadConfig(path string) (Config, error) {
 
 	if config.Password == "" {
 		return Config{}, fmt.Errorf("user password cannot be empty")
+	}
+
+	if config.Encrypt {
+		if config.Key == "" {
+			return Config{}, fmt.Errorf("encryption key cannot be empty")
+		}
+		if len(config.Key) != 32 {
+			return Config{}, fmt.Errorf("encryption key must be exactry 32 bytes long")
+		}
 	}
 
 	return config, err

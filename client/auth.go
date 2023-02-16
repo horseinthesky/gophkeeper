@@ -65,11 +65,11 @@ func (c *Client) saveToken(dir, filename, token string) error {
 }
 
 func (c *Client) login(ctx context.Context) {
-	c.log.Info().Msg("periodic logging in...")
+	c.log.Info().Msg("periodic auth check started...")
 
 	_, err := c.tm.VerifyToken(string(c.token))
 	if err == nil {
-		c.log.Info().Msg("already authenticated")
+		c.log.Info().Msg("existing token is still valid")
 		return
 	}
 	if errors.Is(err, token.ErrExpiredToken) {

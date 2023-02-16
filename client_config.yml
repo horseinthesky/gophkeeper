@@ -1,3 +1,4 @@
 env: dev
 user: bob
 password: password
+key: cuzyouwillneverknowthissecretkey

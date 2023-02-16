@@ -13,7 +13,7 @@ import (
 	"gophkeeper/db/mock"
 	"gophkeeper/pb"
 	"gophkeeper/random"
-	"gophkeeper/server/crypto"
+	"gophkeeper/crypto"
 	"gophkeeper/token"
 )
 

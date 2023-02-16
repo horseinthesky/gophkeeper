@@ -12,7 +12,7 @@ import (
 
 	"gophkeeper/db/db"
 	"gophkeeper/pb"
-	"gophkeeper/server/crypto"
+	"gophkeeper/crypto"
 	"gophkeeper/server/validation"
 )
 

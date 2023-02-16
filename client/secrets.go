@@ -4,9 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"os"
 	"time"
 
+	"gophkeeper/crypto"
 	"gophkeeper/db/db"
 )
 
@@ -38,7 +40,7 @@ func (k SecretKind) String() string {
 }
 
 func (c *Client) GetSecret(kind SecretKind, name string) (db.Secret, error) {
-	return c.storage.GetSecret(
+	dbSecret, err := c.storage.GetSecret(
 		context.Background(),
 		db.GetSecretParams{
 			Owner: c.config.User,
@@ -46,6 +48,23 @@ func (c *Client) GetSecret(kind SecretKind, name string) (db.Secret, error) {
 			Name:  name,
 		},
 	)
+	if err != nil {
+		c.log.Error().Err(err).Msgf("failed to get secret '%s' from db", dbSecret.Name)
+		return db.Secret{}, err
+	}
+
+	if c.config.Encrypt {
+		decryptedPayload, err := crypto.Decrypt(dbSecret.Value, []byte(c.config.Key))
+		if err != nil {
+			c.log.Error().Err(err).Msgf("failed to decrypt secret '%s' payload", dbSecret.Name)
+			return db.Secret{}, fmt.Errorf("failed to decrypt secret '%s' payload: %w", dbSecret.Name, err)
+		}
+
+		dbSecret.Value = decryptedPayload
+		return dbSecret, nil
+	}
+
+	return dbSecret, nil
 }
 
 func (c *Client) SetSecret(kind SecretKind, name string, payload []byte) (db.Secret, error) {

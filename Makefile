@@ -72,7 +72,7 @@ build:
 	go build -o gs ./server.go
 
 test:
-	go test ./{token,client,server,converter}/... -coverprofile=coverage.out
+	go test ./{token,client,server,converter,crypto}/... -coverprofile=coverage.out
 	@go tool cover -html=coverage.out
 
 .PHONY: init dev mkdb es ec rmdb refreshdb migrateup migratedown sqlc mock proto cert build test
