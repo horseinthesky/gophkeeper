@@ -21,7 +21,6 @@ func main() {
 	}
 
 	logger := logger.New(config.Environment)
-	logger.Info().Msg(config.Environment)
 
 	server, err := server.NewServer(config, logger)
 	if err != nil {
