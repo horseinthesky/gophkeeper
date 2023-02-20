@@ -13,7 +13,7 @@ const (
 	defaultAddress     = "localhost:8080"
 	defaultDSN         = "postgresql://postgres:mysecretpassword@localhost:25432?sslmode=disable"
 	defaultSync        = 15 * time.Second
-	defaultClean       = 5 * time.Second
+	defaultClean       = time.Minute
 )
 
 // Config is a gophkeeper configuration.

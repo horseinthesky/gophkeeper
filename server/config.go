@@ -11,7 +11,7 @@ const (
 	defaultEnvironment = "prod"
 	defaultAddress     = "localhost:8080"
 	defaultDSN         = "postgresql://postgres:mysecretpassword@localhost:15432?sslmode=disable"
-	defaultClean       = 5 * time.Second
+	defaultClean       = 15 * time.Minute
 )
 
 // Config is a gophkeeper configuration.

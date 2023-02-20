@@ -65,7 +65,7 @@ The Server supports the following settings:
   - `prod` (**default**) - JSON `WARN` level logs
 - `address` - `address:port` to listen on (defaults to `localhost:8080`)
 - `dsn` - PostgreSQL database DSN
-- `clean` - database cleanup time interval (defaults to `5s`)
+- `clean` - database cleanup time interval (defaults to `15m`)
 
 All can set all the settings in the config file (`-c` flag) or via env vars (overrides config file values) with the same names prefixed with `GOPHKEEPER_` (e.g. `GOPHKEEPER_ENV`).
 
@@ -83,7 +83,7 @@ Client settings are the following:
 - `address` - `address:port` of the server to connect to (defaults to`localhost:8080`)
 - `dsn` - PostgreSQL database DSN
 - `sync` - secret synchronization time interval (defaults to `15s`)
-- `clean` - database cleanup time interval (defaults to `5s`)
+- `clean` - database cleanup time interval (defaults to `1m`)
 
 All can set all the settings in the config file (`-c` flag) or via env vars (overrides config file values) with the same names prefixed with `GOPHKEEPER_` (e.g. `GOPHKEEPER_ENV`).
 
