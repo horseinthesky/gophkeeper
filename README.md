@@ -69,6 +69,11 @@ The Server supports the following settings:
 
 All can set all the settings in the config file (`-c` flag) or via env vars (overrides config file values) with the same names prefixed with `GOPHKEEPER_` (e.g. `GOPHKEEPER_ENV`).
 
+Run server with:
+```
+./gs -c <your_server_config.yml>
+```
+
 ### Client
 
 Client settings are the following:
@@ -86,6 +91,11 @@ Client settings are the following:
 - `clean` - database cleanup time interval (defaults to `1m`)
 
 All can set all the settings in the config file (`-c` flag) or via env vars (overrides config file values) with the same names prefixed with `GOPHKEEPER_` (e.g. `GOPHKEEPER_ENV`).
+
+Run client with:
+```
+./gc -c <your_client_config.yml>
+```
 
 The client will **automatically** register/login (if you are an existing user) with provided credentials.
 
