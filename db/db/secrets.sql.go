@@ -141,6 +141,7 @@ func (q *Queries) GetSecret(ctx context.Context, arg GetSecretParams) (Secret, e
 const getSecretsByKind = `-- name: GetSecretsByKind :many
 SELECT id, owner, kind, name, value, created, modified, deleted FROM secrets
 WHERE owner = $1 AND kind = $2
+ORDER BY modified DESC
 `
 
 type GetSecretsByKindParams struct {
@@ -183,6 +184,7 @@ func (q *Queries) GetSecretsByKind(ctx context.Context, arg GetSecretsByKindPara
 const getSecretsByUser = `-- name: GetSecretsByUser :many
 SELECT id, owner, kind, name, value, created, modified, deleted FROM secrets
 WHERE owner = $1
+ORDER BY modified DESC
 `
 
 func (q *Queries) GetSecretsByUser(ctx context.Context, owner string) ([]Secret, error) {

@@ -18,11 +18,13 @@ LIMIT 1;
 
 -- name: GetSecretsByUser :many
 SELECT * FROM secrets
-WHERE owner = $1;
+WHERE owner = $1
+ORDER BY modified DESC;
 
 -- name: GetSecretsByKind :many
 SELECT * FROM secrets
-WHERE owner = $1 AND kind = $2;
+WHERE owner = $1 AND kind = $2
+ORDER BY modified DESC;
 
 -- name: UpdateSecret :one
 UPDATE secrets
