@@ -156,8 +156,8 @@ func (c *Client) loadSecretContentFromEntry(secret db.Secret) (string, error) {
  Notes: %s
 `,
 			secret.Name,
-			secret.Created.Time,
-			secret.Modified.Time,
+			secret.Created,
+			secret.Modified,
 			secretPayload.Login,
 			secretPayload.Password,
 			secretPayload.Notes,
@@ -177,8 +177,8 @@ func (c *Client) loadSecretContentFromEntry(secret db.Secret) (string, error) {
  Notes: %s
 `,
 			secret.Name,
-			secret.Created.Time,
-			secret.Modified.Time,
+			secret.Created,
+			secret.Modified,
 			secretPayload.Text,
 			secretPayload.Notes,
 		), nil
@@ -199,8 +199,8 @@ func (c *Client) loadSecretContentFromEntry(secret db.Secret) (string, error) {
  Press "s" to save the file to your local drive.
 `,
 			secret.Name,
-			secret.Created.Time,
-			secret.Modified.Time,
+			secret.Created,
+			secret.Modified,
 			secretPayload.Filename,
 			secretPayload.Notes,
 		), nil
@@ -223,8 +223,8 @@ func (c *Client) loadSecretContentFromEntry(secret db.Secret) (string, error) {
  Notes: %s
 `,
 			secret.Name,
-			secret.Created.Time,
-			secret.Modified.Time,
+			secret.Created,
+			secret.Modified,
 			secretPayload.Number,
 			secretPayload.Owner,
 			secretPayload.EXP,

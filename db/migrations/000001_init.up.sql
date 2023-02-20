@@ -10,7 +10,8 @@ CREATE TABLE "secrets" (
   "kind" int NOT NULL,
   "name" varchar NOT NULL,
   "value" bytea NOT NULL,
-  "created" timestamptz DEFAULT (now()),
-  "modified" timestamptz DEFAULT (now()),
-  "deleted" boolean DEFAULT false
+  "created" timestamptz NOT NULL DEFAULT (now()),
+  "modified" timestamptz NOT NULL DEFAULT (now()),
+  "deleted" boolean NOT NULL DEFAULT false
 );
+

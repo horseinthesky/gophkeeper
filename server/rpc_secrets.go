@@ -15,6 +15,8 @@ import (
 )
 
 func (s *Server) SetSecrets(ctx context.Context, in *pb.Secrets) (*emptypb.Empty, error) {
+	s.log.Info().Msgf("got %v secrets for sync", len(in.Secrets))
+
 	for _, pbSecret := range in.Secrets {
 		remoteSecret := converter.PBSecretToDBSecret(pbSecret)
 
@@ -34,7 +36,7 @@ func (s *Server) SetSecrets(ctx context.Context, in *pb.Secrets) (*emptypb.Empty
 			)
 			continue
 		}
-		if errors.Is(err, sql.ErrNoRows) && !remoteSecret.Deleted.Bool {
+		if errors.Is(err, sql.ErrNoRows) && !remoteSecret.Deleted {
 			_, err := s.storage.CreateSecret(
 				ctx,
 				db.CreateSecretParams{
@@ -62,11 +64,11 @@ func (s *Server) SetSecrets(ctx context.Context, in *pb.Secrets) (*emptypb.Empty
 			)
 			continue
 		}
-		if errors.Is(err, sql.ErrNoRows) && remoteSecret.Deleted.Bool {
+		if errors.Is(err, sql.ErrNoRows) && remoteSecret.Deleted {
 			continue
 		}
 
-		if remoteSecret.Deleted.Bool {
+		if remoteSecret.Deleted {
 			err := s.storage.MarkSecretDeleted(
 				ctx,
 				db.MarkSecretDeletedParams{
@@ -92,7 +94,7 @@ func (s *Server) SetSecrets(ctx context.Context, in *pb.Secrets) (*emptypb.Empty
 			continue
 		}
 
-		if remoteSecret.Modified.Time.After(localSecret.Modified.Time) {
+		if remoteSecret.Modified.After(localSecret.Modified) {
 			_, err := s.storage.UpdateSecret(
 				ctx,
 				db.UpdateSecretParams{
@@ -114,12 +116,14 @@ func (s *Server) SetSecrets(ctx context.Context, in *pb.Secrets) (*emptypb.Empty
 			}
 
 			s.log.Info().Msgf(
-				"successfully synced update of user '%s' secret '%s'",
+				"successfully updated user '%s' secret '%s'",
 				remoteSecret.Owner,
 				remoteSecret.Name,
 			)
 		}
 	}
+
+	s.log.Info().Msgf("processed %v secrets", len(in.Secrets))
 
 	return &emptypb.Empty{}, nil
 }
@@ -139,6 +143,8 @@ func (s *Server) GetSecrets(ctx context.Context, in *pb.SecretsRequest) (*pb.Sec
 	for _, secret := range secrets {
 		pbSecrets = append(pbSecrets, converter.DBSecretToPBSecret(secret))
 	}
+
+	s.log.Info().Msgf("successfully sent user '%s' secrets", in.Owner)
 
 	return &pb.Secrets{Secrets: pbSecrets}, nil
 }

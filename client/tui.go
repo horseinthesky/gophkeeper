@@ -315,7 +315,7 @@ func (c *Client) runShell(ctx context.Context) {
 	}
 
 	for _, secret := range secrets {
-		if secret.Deleted.Bool {
+		if secret.Deleted {
 			continue
 		}
 		items = append(

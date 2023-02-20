@@ -5,7 +5,7 @@
 package db
 
 import (
-	"database/sql"
+	"time"
 )
 
 type Secret struct {
@@ -14,9 +14,9 @@ type Secret struct {
 	Kind     int32
 	Name     string
 	Value    []byte
-	Created  sql.NullTime
-	Modified sql.NullTime
-	Deleted  sql.NullBool
+	Created  time.Time
+	Modified time.Time
+	Deleted  bool
 }
 
 type User struct {

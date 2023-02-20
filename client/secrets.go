@@ -84,14 +84,8 @@ func (c *Client) SetSecret(kind SecretKind, name string, payload []byte) (db.Sec
 				Kind:  int32(kind),
 				Name:  name,
 				Value: payload,
-				Created: sql.NullTime{
-					Time:  time.Now(),
-					Valid: true,
-				},
-				Modified: sql.NullTime{
-					Time:  time.Now(),
-					Valid: true,
-				},
+				Created: time.Now(),
+				Modified: time.Now(),
 			},
 		)
 		if err != nil {
@@ -114,14 +108,8 @@ func (c *Client) SetSecret(kind SecretKind, name string, payload []byte) (db.Sec
 			Kind:  int32(kind),
 			Name:  name,
 			Value: payload,
-			Created: sql.NullTime{
-				Time:  localSecret.Created.Time,
-				Valid: true,
-			},
-			Modified: sql.NullTime{
-				Time:  time.Now(),
-				Valid: true,
-			},
+			Created: localSecret.Created,
+			Modified: time.Now(),
 		},
 	)
 

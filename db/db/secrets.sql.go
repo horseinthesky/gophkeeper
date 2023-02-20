@@ -7,7 +7,7 @@ package db
 
 import (
 	"context"
-	"database/sql"
+	"time"
 )
 
 const cleanSecrets = `-- name: CleanSecrets :many
@@ -67,8 +67,8 @@ type CreateSecretParams struct {
 	Kind     int32
 	Name     string
 	Value    []byte
-	Created  sql.NullTime
-	Modified sql.NullTime
+	Created  time.Time
+	Modified time.Time
 }
 
 func (q *Queries) CreateSecret(ctx context.Context, arg CreateSecretParams) (Secret, error) {
@@ -250,8 +250,8 @@ type UpdateSecretParams struct {
 	Kind     int32
 	Name     string
 	Value    []byte
-	Created  sql.NullTime
-	Modified sql.NullTime
+	Created  time.Time
+	Modified time.Time
 }
 
 func (q *Queries) UpdateSecret(ctx context.Context, arg UpdateSecretParams) (Secret, error) {

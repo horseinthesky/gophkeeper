@@ -112,17 +112,6 @@ func TestRPCSetSecrets(t *testing.T) {
 
 	// Mock secret to update
 	mockStorage.EXPECT().
-		UpdateSecret(
-			gomock.Any(),
-			gomock.Any(),
-		).
-		Times(1).
-		Return(
-			db.Secret{},
-			nil,
-		)
-
-	mockStorage.EXPECT().
 		GetSecret(
 			gomock.Any(),
 			db.GetSecretParams{
@@ -134,14 +123,22 @@ func TestRPCSetSecrets(t *testing.T) {
 		Times(1).
 		Return(
 			db.Secret{
-				Owner: testUsername2,
-				Kind:  0,
-				Name:  "testSecretToUpdate",
-				Modified: sql.NullTime{
-					Time:  time.Now().Add(-time.Minute),
-					Valid: true,
-				},
+				Owner:    testUsername2,
+				Kind:     0,
+				Name:     "testSecretToUpdate",
+				Modified: time.Now().Add(-time.Minute),
 			},
+			nil,
+		)
+
+	mockStorage.EXPECT().
+		UpdateSecret(
+			gomock.Any(),
+			gomock.Any(),
+		).
+		Times(1).
+		Return(
+			db.Secret{},
 			nil,
 		)
 
@@ -195,7 +192,7 @@ func TestRPCSetSecrets(t *testing.T) {
 					Owner:    testUsername2,
 					Kind:     0,
 					Name:     "testSecretToUpdate",
-					Modified: timestamppb.New(time.Now()),
+					Modified: timestamppb.Now(),
 				},
 			},
 		},

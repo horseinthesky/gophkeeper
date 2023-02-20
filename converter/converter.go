@@ -1,8 +1,6 @@
 package converter
 
 import (
-	"database/sql"
-
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"gophkeeper/db/db"
@@ -15,9 +13,9 @@ func DBSecretToPBSecret(secret db.Secret) *pb.Secret {
 		Kind:     secret.Kind,
 		Name:     secret.Name,
 		Value:    secret.Value,
-		Created:  timestamppb.New(secret.Created.Time),
-		Modified: timestamppb.New(secret.Modified.Time),
-		Deleted:  secret.Deleted.Bool,
+		Created:  timestamppb.New(secret.Created),
+		Modified: timestamppb.New(secret.Modified),
+		Deleted:  secret.Deleted,
 	}
 }
 
@@ -27,17 +25,8 @@ func PBSecretToDBSecret(secret *pb.Secret) db.Secret {
 		Kind:  secret.Kind,
 		Name:  secret.Name,
 		Value: secret.Value,
-		Created: sql.NullTime{
-			Time:  secret.Created.AsTime(),
-			Valid: true,
-		},
-		Modified: sql.NullTime{
-			Time:  secret.Modified.AsTime(),
-			Valid: true,
-		},
-		Deleted: sql.NullBool{
-			Bool:  secret.Deleted,
-			Valid: true,
-		},
+		Created: secret.Created.AsTime(),
+		Modified: secret.Modified.AsTime(),
+		Deleted: secret.Deleted,
 	}
 }

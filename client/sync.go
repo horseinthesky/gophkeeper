@@ -79,7 +79,7 @@ func (c *Client) sync(ctx context.Context) {
 			)
 			continue
 		}
-		if errors.Is(err, sql.ErrNoRows) && !remoteSecret.Deleted.Bool {
+		if errors.Is(err, sql.ErrNoRows) && !remoteSecret.Deleted {
 			_, err := c.storage.CreateSecret(
 				ctx,
 				db.CreateSecretParams{
@@ -108,7 +108,7 @@ func (c *Client) sync(ctx context.Context) {
 			continue
 		}
 
-		if remoteSecret.Deleted.Bool {
+		if remoteSecret.Deleted {
 			err := c.storage.DeleteSecret(
 				ctx,
 				db.DeleteSecretParams{
@@ -134,7 +134,7 @@ func (c *Client) sync(ctx context.Context) {
 			continue
 		}
 
-		if remoteSecret.Modified.Time.After(localSecret.Modified.Time) {
+		if remoteSecret.Modified.After(localSecret.Modified) {
 			_, err := c.storage.UpdateSecret(
 				ctx,
 				db.UpdateSecretParams{

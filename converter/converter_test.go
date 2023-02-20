@@ -1,7 +1,6 @@
 package converter
 
 import (
-	"database/sql"
 	"fmt"
 	"testing"
 	"time"
@@ -61,18 +60,9 @@ func TestDBSecretToPBSecret(t *testing.T) {
 				Kind:  tt.kind,
 				Name:  tt.name,
 				Value: []byte(tt.value),
-				Created: sql.NullTime{
-					Time:  now,
-					Valid: true,
-				},
-				Modified: sql.NullTime{
-					Time:  now,
-					Valid: true,
-				},
-				Deleted: sql.NullBool{
-					Bool:  false,
-					Valid: true,
-				},
+				Created: now,
+				Modified: now,
+				Deleted: false,
 			}
 
 			pbSecret := DBSecretToPBSecret(testDBSecret)
@@ -80,7 +70,7 @@ func TestDBSecretToPBSecret(t *testing.T) {
 			require.Equal(t, pbSecret.Kind, testDBSecret.Kind)
 			require.Equal(t, pbSecret.Name, testDBSecret.Name)
 			require.Equal(t, pbSecret.Value, testDBSecret.Value)
-			require.Equal(t, pbSecret.Created.AsTime(), testDBSecret.Created.Time.UTC())
+			require.Equal(t, pbSecret.Created.AsTime(), testDBSecret.Created.UTC())
 		})
 	}
 }
@@ -105,7 +95,7 @@ func TestPBSecretToBBSecret(t *testing.T) {
 			require.Equal(t, dbSecret.Kind, testPBSecret.Kind)
 			require.Equal(t, dbSecret.Name, testPBSecret.Name)
 			require.Equal(t, dbSecret.Value, testPBSecret.Value)
-			require.Equal(t, dbSecret.Created.Time, testPBSecret.Created.AsTime())
+			require.Equal(t, dbSecret.Created, testPBSecret.Created.AsTime())
 		})
 	}
 }
