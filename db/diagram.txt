@@ -10,7 +10,7 @@ Table secrets {
   kind int [not null]
   name varchar [not null]
   value bytea [not null]
-  created timestamptz [default: `now()`]
-  modified timestamptz [default: `now()`]
-  deleted boolean [default: false]
+  created timestamptz [not null, default: `now()`]
+  modified timestamptz [not null, default: `now()`]
+  deleted boolean [not null, default: false]
 }
