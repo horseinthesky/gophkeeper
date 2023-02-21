@@ -29,7 +29,7 @@ Display your secret info
 ### Supported secret kinds
 
 - Login/Password pairs
-- Arbitrary test
+- Arbitrary text
 - Arbitrary bytes (files)
 - Bank card credentials
 
@@ -73,6 +73,22 @@ All can set all the settings in the config file (`-c` flag) or via env vars (ove
 Run server with:
 ```
 ./gs -c <your_server_config.yml>
+```
+
+#### 🐳 Docker
+
+You can also run gophkeeper server side in docker. Image will be automatically build for you.
+
+Run gophkeeper server:
+
+```
+make sup
+```
+
+Stop gophkeeper server:
+
+```
+make sdown
 ```
 
 ### Client

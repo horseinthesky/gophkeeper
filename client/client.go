@@ -12,6 +12,7 @@ import (
 
 	"gophkeeper/certs"
 	"gophkeeper/db/db"
+	migrate "gophkeeper/db"
 	"gophkeeper/pb"
 	"gophkeeper/token"
 )
@@ -33,6 +34,11 @@ func NewClient(cfg Config, logger zerolog.Logger) (*Client, error) {
 	}
 
 	err = pool.Ping()
+	if err != nil {
+		return nil, err
+	}
+
+	err = migrate.RunDBMigration(cfg.DSN)
 	if err != nil {
 		return nil, err
 	}
