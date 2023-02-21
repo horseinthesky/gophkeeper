@@ -1,0 +1,12 @@
+.git
+LICENSE
+Makefile
+*.md
+
+media/
+proto/
+random/
+*.yml
+*.yaml
+*.log
+*.out
