@@ -1,0 +1,16 @@
+Table users {
+  id int [pk, increment]
+  name varchar [not null, unique]
+  passhash varchar [not null]
+}
+
+Table secrets {
+  id bigint [pk, increment]
+  owner varchar [not null]
+  kind int [not null]
+  name varchar [not null]
+  value bytea [not null]
+  created timestamptz [not null, default: `now()`]
+  modified timestamptz [not null, default: `now()`]
+  deleted boolean [not null, default: false]
+}
