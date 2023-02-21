@@ -8,6 +8,7 @@
 
 - 📦 Manage all secrets with a nice [bubbletea powered](https://github.com/charmbracelet/bubbletea) UI
 - 🚀 Fast secret management thanks to automatic caching
+- 🔒️ High privacy with [GCM encryption](https://en.wikipedia.org/wiki/Galois/Counter_Mode)
 - 💾 Transparent background synchronization with the server
 - 💪 Async execution for improved performance
 
