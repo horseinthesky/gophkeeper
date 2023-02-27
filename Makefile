@@ -69,7 +69,7 @@ cert:
 
 build:
 	export CGO_ENABLED=0
-	go build -ldflags -buildvcs=false "-X 'main.buildTime=$(date +'%Y/%m/%d %H:%M:%S')'" -o gc ./cmd/client/
+	go build -buildvcs=false -ldflags "-X 'main.buildTime=$(date +'%Y/%m/%d %H:%M:%S')'" -o gc ./cmd/client/
 	go build -buildvcs=false -o gs ./cmd/server
 
 sup:
