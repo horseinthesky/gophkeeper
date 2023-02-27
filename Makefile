@@ -68,9 +68,9 @@ cert:
 	cd certs ; ./gen.sh ; cd ..
 
 build:
-	export CGO_ENABLED=0 && export GOFLAGS=-buildvcs=false
-	go build -ldflags "-X 'main.buildTime=$(date +'%Y/%m/%d %H:%M:%S')'" -o gc ./cmd/client/
-	go build -o gs ./cmd/server
+	export CGO_ENABLED=0
+	go build -ldflags -buildvcs=false "-X 'main.buildTime=$(date +'%Y/%m/%d %H:%M:%S')'" -o gc ./cmd/client/
+	go build -buildvcs=false -o gs ./cmd/server
 
 sup:
 	docker-compose up -d
