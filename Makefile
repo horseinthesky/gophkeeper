@@ -68,6 +68,7 @@ cert:
 	cd certs ; ./gen.sh ; cd ..
 
 build:
+	export CGO_ENABLED=0
 	go build -ldflags "-X 'main.buildTime=$(date +'%Y/%m/%d %H:%M:%S')'" -o gc ./cmd/client/
 	go build -o gs ./cmd/server
 
