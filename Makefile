@@ -68,8 +68,8 @@ cert:
 	cd certs ; ./gen.sh ; cd ..
 
 build:
-	go build -ldflags "-X 'main.buildTime=$(date +'%Y/%m/%d %H:%M:%S')'" -o gc ./client.go
-	go build -o gs ./server.go
+	go build -ldflags "-X 'main.buildTime=$(date +'%Y/%m/%d %H:%M:%S')'" -o gc ./cmd/client/
+	go build -o gs ./cmd/server
 
 sup:
 	docker-compose up -d
